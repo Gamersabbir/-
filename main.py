@@ -21,6 +21,9 @@ user_languages = {}
 
 nomBot = "None"
 
+# সার্ভার আইডি অনুযায়ী রেজিস্টার্ড চ্যানেল আইডি রাখার ডিকশনারি
+registered_channels = {}
+
 @app.route('/')
 def home():
     global nomBot
@@ -36,6 +39,25 @@ async def on_ready():
     global nomBot
     nomBot = f"{bot.user}"
     print(f"Le bot est connecté en tant que {bot.user}")
+
+# ---------- নতুন !setup কমান্ড ----------
+@bot.command(name="setup")
+@commands.has_permissions(administrator=True)  # শুধুমাত্র অ্যাডমিনরা চালাতে পারবে
+async def setup(ctx):
+    server_id = ctx.guild.id
+    channel_id = ctx.channel.id
+    registered_channels[server_id] = channel_id
+    await ctx.send(f"এই সার্ভারের জন্য এই চ্যানেল (ID: {channel_id}) রেজিস্টার করা হলো। এখন থেকে এই চ্যানেলেই কমান্ড চলবে।")
+
+# ---------- চ্যানেল চেক করার চেক ----------
+def is_registered_channel():
+    def predicate(ctx):
+        server_id = ctx.guild.id
+        if server_id not in registered_channels:
+            return False  # setup হয় নাই, কাজ করবে না
+        # চ্যানেল ম্যাচ করানো হচ্ছে
+        return ctx.channel.id == registered_channels[server_id]
+    return commands.check(predicate)
 
 @bot.command(name="guilds")
 async def show_guilds(ctx):
@@ -55,6 +77,7 @@ async def change_language(ctx, lang_code: str):
     await ctx.send(f"{ctx.author.mention} {message}")
 
 @bot.command(name="ID")
+@is_registered_channel()  # শুধু রেজিস্টার্ড চ্যানেলে কাজ করবে
 async def check_ban_command(ctx):
     content = ctx.message.content
     user_id = content[3:].strip()
