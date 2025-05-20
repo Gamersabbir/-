@@ -124,7 +124,7 @@ async def check_ban_command(ctx):
             embed.set_image(url="blob:https://github.com/0b4587ec-b443-4de6-a2c6-b434f633a809")
 
         embed.set_thumbnail(url=ctx.author.avatar.url if ctx.author.avatar else ctx.author.default_avatar.url)
-        embed.set_footer(text="📌  Dev</> !      ＧＡＭＥＲ ＳＡＢＢＩＲ")
+        embed.set_footer(text="📌  Garena Free Fire")
         await ctx.send(f"{ctx.author.mention}", embed=embed)
 
 bot.run(TOKEN)
