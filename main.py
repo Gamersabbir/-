@@ -111,7 +111,7 @@ async def check_ban_command(ctx):
                 f"**• {'Player ID' if lang == 'en' else 'ID du joueur'} :** `{id_str}`\n"
                 f"**• {'Region' if lang == 'en' else 'Région'} :** `{region}`"
             )
-            embed.set_image(url="https://ibb.co/7JsRJqC1.gif")
+            embed.set_image(url="https://i.ibb.co/ibb.co/7JsRJqC1.gif")
         else:
             embed.title = "**▌ Clean Account ✅ **" if lang == "en" else "**▌ Compte non banni ✅ **"
             embed.description = (
@@ -121,7 +121,7 @@ async def check_ban_command(ctx):
                 f"**• {'Player ID' if lang == 'en' else 'ID du joueur'} :** `{id_str}`\n"
                 f"**• {'Region' if lang == 'en' else 'Région'} :** `{region}`"
             )
-            embed.set_image(url="https://ibb.co/99gP46s8.gif")
+            embed.set_image(url="https://i.ibb.co/ibb.co/99gP46s8.gif")
 
         embed.set_thumbnail(url=ctx.author.avatar.url if ctx.author.avatar else ctx.author.default_avatar.url)
         embed.set_footer(text="📌  Garena Free Fire")
