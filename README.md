@@ -46,30 +46,8 @@ A Discord bot to check if a Free Fire account is banned, using a user ID. Also i
 
 
 
-## 🛠️ Create a Discord Bot
-
-1. Go to the [Discord Developer Portal](https://discord.com/developers/applications).
-2. Click **"New Application"**, and give your bot a name.
-3. In the left sidebar, go to the **"Bot"** section and click **"Add Bot"**, then confirm with **"Yes, do it!"**.
-4. Under the **Token** section, click **"Reset Token"** or **"Copy"** to get your `TOKEN`.
-5. Go to **"General Information"** and copy the `APPLICATION_ID`.
-6. Paste both values into your `.env` file:
-      ```ini
-   APPLICATION_ID=your_application_id
-   TOKEN=your_bot_token
-   ```
 
 
-## 🔗 Invite the Bot to a Discord Server
-
-1. Go to **OAuth2 > URL Generator** in the Developer Portal.
-2. Under **Scopes**, check:
-   - `bot`
-   - `applications.commands`
-3. Under **Bot Permissions**, check at least:
-   - `Send Messages`
-   - `Embed Links`
-4. Copy the generated URL and open it in your browser to invite the bot to your server.
 
 
 ## 📚 Bot Commands
