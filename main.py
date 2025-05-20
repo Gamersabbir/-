@@ -111,7 +111,7 @@ async def check_ban_command(ctx):
                 f"**• {'Player ID' if lang == 'en' else 'ID du joueur'} :** `{id_str}`\n"
                 f"**• {'Region' if lang == 'en' else 'Région'} :** `{region}`"
             )
-            embed.set_image(url="blob:https://github.com/b7ec199d-847b-42d4-a9aa-da2c5ccc2d02")
+            embed.set_image(url="https://i.imgur.com/6PDA32M.gif")
         else:
             embed.title = "**▌ Clean Account ✅ **" if lang == "en" else "**▌ Compte non banni ✅ **"
             embed.description = (
@@ -121,7 +121,7 @@ async def check_ban_command(ctx):
                 f"**• {'Player ID' if lang == 'en' else 'ID du joueur'} :** `{id_str}`\n"
                 f"**• {'Region' if lang == 'en' else 'Région'} :** `{region}`"
             )
-            embed.set_image(url="blob:https://github.com/c45c593f-4864-48b4-b2b3-830635c36bfc")
+            embed.set_image(url="https://i.imgur.com/166jkZ7.gif")
 
         embed.set_thumbnail(url=ctx.author.avatar.url if ctx.author.avatar else ctx.author.default_avatar.url)
         embed.set_footer(text="📌  Dev</>!      GAMER SABBIR")
