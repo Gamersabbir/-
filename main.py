@@ -41,7 +41,7 @@ async def on_ready():
     print(f"Le bot est connecté en tant que {bot.user}")
 
 # ---------- নতুন !setup কমান্ড ----------
-@bot.command(name="setup")
+@bot.command(name="setup", aliases=["SETUP", "Setup")
 @commands.has_permissions(administrator=True)  # শুধুমাত্র অ্যাডমিনরা চালাতে পারবে
 async def setup(ctx):
     server_id = ctx.guild.id
