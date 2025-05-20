@@ -40,6 +40,28 @@ async def on_ready():
     nomBot = f"{bot.user}"
     print(f"Le bot est connecté en tant que {bot.user}")
 
+
+@bot.command(name="help", aliases=["HELP", "Help")
+async def help_command(ctx):
+    embed = discord.Embed(
+        title="🤖 BOT ব্যবহারের নির্দেশনা",
+        description=(
+            "**🔧 প্রথমে `!setup` কমান্ড দিয়ে চ্যানেল সেট করুন।**\n"
+            "এই কমান্ডটি যে চ্যানেলে দেওয়া হবে, কেবল সেই চ্যানেলেই বট কাজ করবে।\n\n"
+            "**📌 উদাহরণ:**\n"
+            "`!setup`\n\n"
+            "**🛑 অন্য কোনো চ্যানেলে কমান্ড দিলে বট কাজ করবে না।**\n\n"
+            "**✅ `!setup` করার পর আপনি এই কমান্ডগুলো ব্যবহার করতে পারবেন:**\n"
+            "• `!ID 123456789` → ইউজারের ব্যান চেক করুন\n"
+            "• `!lang en` বা `!lang fr` → ভাষা পরিবর্তন\n"
+            "• `!guilds` → বট কোন কোন সার্ভারে আছে দেখুন\n\n"
+            "**❗  `!setup` না করলে বট কাজ করবে না।**"
+        ),
+        color=0x3498db
+    )
+    embed.set_footer(text="📌 Bot by GAMER SABBIR")
+    await ctx.send(embed=embed)
+
 # ---------- নতুন !setup কমান্ড ----------
 @bot.command(name="setup", aliases=["SETUP", "Setup")
 @commands.has_permissions(administrator=True)  # শুধুমাত্র অ্যাডমিনরা চালাতে পারবে
@@ -73,7 +95,7 @@ async def change_language(ctx, lang_code: str):
         return
 
     user_languages[ctx.author.id] = lang_code
-    message = "✅ Language set to English." if lang_code == 'en' else "✅ Langue définie sur le français."
+    message = "✅ Language set to English  And  Bangla  ." if lang_code == 'en' else "✅ Langue définie sur le français."
     await ctx.send(f"{ctx.author.mention} {message}")
 
 @bot.command(name="ID")
