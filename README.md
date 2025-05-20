@@ -6,9 +6,7 @@ A Discord bot to check if a Free Fire account is banned, using a user ID. Also i
 
 - [Features](#-features)
 - [Requirements](#requirements)
-- [Installation](#installation)
 - [Usage](#usage)
-- [Create a Discord Bot](#create-a-discord-bot)
 - [Technologies Used](#technologies-used)
 - [License](#license)
 - [Author](#author)
@@ -52,6 +50,27 @@ A Discord bot to check if a Free Fire account is banned, using a user ID. Also i
 
 ## 📚 Bot Commands
 
+
+
+🛠️ ব্যবহারের নিয়ম:
+১️⃣ `!setup` কমান্ড দিয়ে চ্যানেল সেট করুন।
+২️⃣ শুধু সেই চ্যানেলেই বট কাজ করবে।
+৩️⃣ `!ID`, `!lang`, `!guilds`, `!help` – সব কমান্ড শুধু সেটআপ চ্যানেলে চলবে।
+ℹ️ `!help` কমান্ড দিয়ে সব নিয়ম ও কমান্ড লিস্ট দেখতে পারবেন।
+
+❗ `!setup` ছাড়া বট কোনো কমান্ডে কাজ করবে না।
+
+🤖 BOT by GAMER SABBIR
+
+
+
+
+
+
+
+
+
+
 ### `!ID <user_id>`
 Check whether a Free Fire account is **banned** or **not**.
 
@@ -92,7 +111,7 @@ Click the link below to invite the CheckBan bot to your Discord server:
 
 ## License
 
-This project is licensed under the MIT License. Feel free to use and modify it.
+BOT  Free   And  API Paid
 
 ## Author
 
