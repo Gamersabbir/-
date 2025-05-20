@@ -111,7 +111,7 @@ async def check_ban_command(ctx):
                 f"**• {'Player ID' if lang == 'en' else 'ID du joueur'} :** `{id_str}`\n"
                 f"**• {'Region' if lang == 'en' else 'Région'} :** `{region}`"
             )
-            embed.set_image(url="https://i.ibb.co/LzVJz3RZ/standard-1.gif")
+            embed.set_image(url="blob:https://github.com/0ffbe995-dcb6-483b-b963-af3d35b3421b")
         else:
             embed.title = "**▌ Clean Account ✅ **" if lang == "en" else "**▌ Compte non banni ✅ **"
             embed.description = (
