@@ -63,7 +63,7 @@ async def help_command(ctx):
     await ctx.send(embed=embed)
 
 # ---------- নতুন !setup কমান্ড ----------
-@bot.command(name="setup", aliases=["SETUP", "Setup")
+@bot.command(name="setup", aliases=["SETUP", "Setup"])
 @commands.has_permissions(administrator=True)  # শুধুমাত্র অ্যাডমিনরা চালাতে পারবে
 async def setup(ctx):
     server_id = ctx.guild.id
@@ -81,13 +81,13 @@ def is_registered_channel():
         return ctx.channel.id == registered_channels[server_id]
     return commands.check(predicate)
 
-@bot.command(name="guilds", aliases=["GUILDS", "Guilds")
+@bot.command(name="guilds", aliases=["GUILDS", "Guilds"])
 async def show_guilds(ctx):
     guild_names = [f"{i+1}. {guild.name}" for i, guild in enumerate(bot.guilds)]
     guild_list = "\n".join(guild_names)
     await ctx.send(f"Le bot est dans les guilds suivantes :\n{guild_list}")
 
-@bot.command(name="lang", aliases=["LANG", "Lang")
+@bot.command(name="lang", aliases=["LANG", "Lang"])
 async def change_language(ctx, lang_code: str):
     lang_code = lang_code.lower()
     if lang_code not in ["en", "fr"]:
