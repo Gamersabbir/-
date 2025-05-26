@@ -41,7 +41,7 @@ async def on_ready():
     print(f"Le bot est connecté en tant que {bot.user}")
 
 
-@bot.command(name="help", aliases=["HELP", "Help")
+@bot.command(name="help", aliases=["HELP", "Help"])
 async def help_command(ctx):
     embed = discord.Embed(
         title="🤖 BOT ব্যবহারের নির্দেশনা",
