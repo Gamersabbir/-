@@ -4,6 +4,7 @@ from discord.ext import commands
 from dotenv import load_dotenv
 from flask import Flask
 import threading
+import aiohttp
 from utils import check_ban
 
 app = Flask(__name__)
@@ -78,6 +79,63 @@ async def change_language(ctx, lang_code: str):
     user_languages[ctx.author.id] = lang_code
     message = "✅ Language set to English  And  Bangla  ." if lang_code == 'en' else "✅ Langue définie sur le français."
     await ctx.send(f"{ctx.author.mention} {message}")
+
+
+
+@bot.command(name="ff", aliases=["FF", "Ff"])
+@is_registered_channel()
+async def fetch_player_info(ctx, uid: str):
+    if not uid.isdigit():
+        await ctx.send("❌ Invalid UID! Please use: `!ff 1234567890`")
+        return
+
+    api_url = f"https://player-track.vercel.app/info?uid={uid}"
+    
+    async with ctx.typing():
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(api_url) as response:
+                    data = await response.json()
+        except Exception as e:
+            await ctx.send(f"⚠️ Error fetching data: `{e}`")
+            return
+
+        if not data.get("data"):
+            await ctx.send("❌ Player info not found or invalid UID.")
+            return
+
+        p = data["data"]["player_info"]
+        pet = data["data"].get("petInfo", {})
+        guild = data["data"].get("guildInfo", {})
+        owner = guild.get("owner_basic_info", {})
+
+        embed = discord.Embed(
+            title=f"🎮 {p.get('nikname', 'Unknown')}",
+            color=discord.Color.green()
+        )
+        embed.add_field(name="🆔 UID", value=uid, inline=True)
+        embed.add_field(name="⭐ Level", value=str(p.get("level", "N/A")), inline=True)
+        embed.add_field(name="👍 Likes", value=str(p.get("likes", "N/A")), inline=True)
+        embed.add_field(name="📆 Created", value=p.get("account_created", "N/A"), inline=True)
+        embed.add_field(name="🕹️ Last Login", value=p.get("last_login", "N/A"), inline=True)
+        embed.add_field(name="🗺️ Region", value=p.get("region", "N/A"), inline=True)
+
+        # Pet Info
+        if pet:
+            embed.add_field(name="🐾 Pet", value=f"{pet.get('name', '')} (Lv{pet.get('level', '?')})", inline=True)
+
+        # Guild Info
+        if guild:
+            embed.add_field(name="🏰 Guild", value=f"{guild.get('name', 'N/A')} (Lv{guild.get('level', 'N/A')})", inline=False)
+
+        if owner:
+            embed.add_field(name="👑 Guild Owner", value=f"{owner.get('nickname', '')} (Lv{owner.get('level', '')})", inline=True)
+
+        embed.set_footer(text="📌 Data from player-track.vercel.app")
+        await ctx.send(embed=embed)
+
+
+
 
 @bot.command(name="ID")
 @is_registered_channel()  # শুধু রেজিস্টার্ড চ্যানেলে কাজ করবে
