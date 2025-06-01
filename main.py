@@ -4,7 +4,6 @@ from discord.ext import commands
 from dotenv import load_dotenv
 from flask import Flask
 import threading
-import requests  # নতুন, API কলের জন্য দরকার
 from utils import check_ban
 
 app = Flask(__name__)
@@ -22,6 +21,7 @@ user_languages = {}
 
 nomBot = "None"
 
+# সার্ভার আইডি অনুযায়ী রেজিস্টার্ড চ্যানেল আইডি রাখার ডিকশনারি
 registered_channels = {}
 
 @app.route('/')
@@ -40,19 +40,25 @@ async def on_ready():
     nomBot = f"{bot.user}"
     print(f"Le bot est connecté en tant que {bot.user}")
 
+
+
+
+# ---------- নতুন !setup কমান্ড ----------
 @bot.command(name="setup", aliases=["SETUP", "Setup"])
-@commands.has_permissions(administrator=True)
+@commands.has_permissions(administrator=True)  # শুধুমাত্র অ্যাডমিনরা চালাতে পারবে
 async def setup(ctx):
     server_id = ctx.guild.id
     channel_id = ctx.channel.id
     registered_channels[server_id] = channel_id
     await ctx.send(f"এই সার্ভারের জন্য এই চ্যানেল (ID: {channel_id}) রেজিস্টার করা হলো। এখন থেকে এই চ্যানেলেই কমান্ড চলবে।")
 
+# ---------- চ্যানেল চেক করার চেক ----------
 def is_registered_channel():
     def predicate(ctx):
         server_id = ctx.guild.id
         if server_id not in registered_channels:
-            return False
+            return False  # setup হয় নাই, কাজ করবে না
+        # চ্যানেল ম্যাচ করানো হচ্ছে
         return ctx.channel.id == registered_channels[server_id]
     return commands.check(predicate)
 
@@ -68,16 +74,18 @@ async def change_language(ctx, lang_code: str):
     if lang_code not in ["en", "fr"]:
         await ctx.send("❌ Invalid language. Available: `en`, `fr`")
         return
+
     user_languages[ctx.author.id] = lang_code
     message = "✅ Language set to English  And  Bangla  ." if lang_code == 'en' else "✅ Langue définie sur le français."
     await ctx.send(f"{ctx.author.mention} {message}")
 
 @bot.command(name="ID")
-@is_registered_channel()
+@is_registered_channel()  # শুধু রেজিস্টার্ড চ্যানেলে কাজ করবে
 async def check_ban_command(ctx):
     content = ctx.message.content
     user_id = content[3:].strip()
     lang = user_languages.get(ctx.author.id, "en")
+
     print(f"Commande fait par {ctx.author} (lang={lang})")
 
     if not user_id.isdigit():
@@ -144,45 +152,5 @@ async def check_ban_command(ctx):
         embed.set_thumbnail(url=ctx.author.avatar.url if ctx.author.avatar else ctx.author.default_avatar.url)
         embed.set_footer(text="📌  Dev</>!      GAMER SABBIR")
         await ctx.send(f"{ctx.author.mention}", embed=embed)
-
-# ----------- নতুন প্রোফাইল কমান্ড -----------
-@bot.command(name="profile")
-@is_registered_channel()
-async def profile(ctx, uid: str, region: str = "ind"):
-    lang = user_languages.get(ctx.author.id, "en")
-    if not uid.isdigit():
-        await ctx.send(f"{ctx.author.mention} ❌ Invalid UID! Please enter a numeric UID.")
-        return
-
-    await ctx.trigger_typing()
-    try:
-        url = f"https://player-track.vercel.app/info?id={uid}&region={region}"
-        response = requests.get(url)
-        data = response.json()
-    except Exception as e:
-        await ctx.send(f"{ctx.author.mention} ⚠️ Error fetching data:\n```{str(e)}```")
-        return
-
-    if "message" in data:
-        await ctx.send(f"{ctx.author.mention} ❌ {data['message']}")
-        return
-
-    player = data.get("player", {})
-    nickname = player.get("nickname", "N/A")
-    level = player.get("level", "N/A")
-    region_api = player.get("region", "N/A")
-    rank = player.get("rank", {}).get("rankName", "N/A")
-    clan = player.get("clan", {}).get("clanName", "N/A")
-
-    embed = discord.Embed(title=f"Profile Info for UID {uid}", color=0x00FF00)
-    embed.add_field(name="Nickname", value=nickname, inline=True)
-    embed.add_field(name="Level", value=level, inline=True)
-    embed.add_field(name="Region", value=region_api, inline=True)
-    embed.add_field(name="Rank", value=rank, inline=True)
-    embed.add_field(name="Clan", value=clan, inline=True)
-    embed.set_footer(text="📌 Dev</>! GAMER SABBIR")
-    embed.set_thumbnail(url=ctx.author.avatar.url if ctx.author.avatar else ctx.author.default_avatar.url)
-
-    await ctx.send(embed=embed)
 
 bot.run(TOKEN)
