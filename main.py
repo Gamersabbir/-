@@ -260,7 +260,10 @@ async def player_info(ctx, uid: str):
                     inline=False
                 )
 
-            embed.set_thumbnail(url="https://i.imgur.com/ajygBes.gif")
+            embed.set_thumbnail(url=ctx.author.avatar.url if ctx.author.avatar else ctx.author.default_avatar.url)
+
+            embed.set_image(url="https://i.imgur.com/ajygBes.gif")
+
             embed.set_footer(text="📌 Dev</>  !  GAMER SABBIR", icon_url="https://i.imgur.com/E8yZ4MP.png")
 
             await ctx.send(f"{ctx.author.mention}", embed=embed)
