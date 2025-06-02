@@ -191,58 +191,72 @@ async def player_info(ctx, uid: str):
             leader = guild.get("owner_basic_info", {})
             pet = player_data.get("petInfo", {})
 
-            message = f"""```diff
-┌ 👤 ACCOUNT BASIC INFO
-├─ Name: {info.get('nickname', 'N/A')}
-├─ UID: {info.get('uid', 'N/A')}
-├─ Level: {info.get('level', 'N/A')} (Exp: {info.get('exp', 'N/A')})
-├─ Region: {info.get('region', 'N/A')}
-├─ Likes: {info.get('likes', 'N/A')}
-├─ Honor Score: {info.get('honor_score', 'N/A')}
-└─ Signature: {info.get('signature', 'N/A')}
+            embed = discord.Embed(
+                title=f"📘 Player Info: {info.get('nickname', 'N/A')}",
+                color=discord.Color.dark_blue()
+            )
 
-┌ 🎮 ACCOUNT ACTIVITY
-├─ Most Recent OB: {info.get('release_version', 'N/A')}
-├─ Current BP Badges: {info.get('badge_num', 'N/A')}
-├─ BR Rank: {info.get('br_rank_points', 'N/A')}
-├─ CS Points: {info.get('cs_rank_points', 'N/A')}
-├─ Created At: {info.get('account_created', 'N/A')}
-└─ Last Login: {info.get('last_login', 'N/A')}
+            # Account Basic Info
+            embed.add_field(name="👤 ACCOUNT BASIC INFO", value=f"""```yaml
+Name: {info.get('nickname', 'N/A')}
+UID: {info.get('uid', 'N/A')}
+Level: {info.get('level', 'N/A')} (Exp: {info.get('exp', 'N/A')})
+Region: {info.get('region', 'N/A')}
+Likes: {info.get('likes', 'N/A')}
+Honor Score: {info.get('honor_score', 'N/A')}
+Signature: {info.get('signature', 'N/A')}
+```""", inline=False)
 
-┌ 👕 ACCOUNT OVERVIEW
-├─ Avatar ID: {info.get('avatar_id', 'N/A')}
-├─ Banner ID: {info.get('banner_id', 'N/A')}
-└─ Title ID: {info.get('title_id', 'N/A')}
+            # Account Activity
+            embed.add_field(name="🎮 ACCOUNT ACTIVITY", value=f"""```yaml
+Most Recent OB: {info.get('release_version', 'N/A')}
+BP Badges: {info.get('badge_num', 'N/A')}
+BR Rank: {info.get('br_rank_points', 'N/A')}
+CS Points: {info.get('cs_rank_points', 'N/A')}
+Created At: {info.get('account_created', 'N/A')}
+Last Login: {info.get('last_login', 'N/A')}
+```""", inline=False)
 
-┌ 🐾 PET DETAILS
-├─ Equipped?: {'Yes' if pet else 'No'}
-├─ Pet Name: {pet.get('name', 'N/A')}
-├─ Pet Exp: {pet.get('exp', 'N/A')}
-└─ Pet Level: {pet.get('level', 'N/A')}
+            # Overview
+            embed.add_field(name="👕 ACCOUNT OVERVIEW", value=f"""```yaml
+Avatar ID: {info.get('avatar_id', 'N/A')}
+Banner ID: {info.get('banner_id', 'N/A')}
+Title ID: {info.get('title_id', 'N/A')}
+```""", inline=False)
 
-┌ 🛡️ GUILD INFO
-├─ Guild Name: {guild.get('name', 'N/A')}
-├─ Guild ID: {guild.get('guild_id', 'N/A')}
-├─ Guild Level: {guild.get('level', 'N/A')}
-├─ Live Members: {guild.get('members', 'N/A')}
-└─ Leader Info:
-├─ Leader Name: {leader.get('nickname', 'N/A')}
-├─ Leader UID: {leader.get('uid', 'N/A')}
-├─ Leader Level: {leader.get('level', 'N/A')} (Exp: {leader.get('exp', 'N/A')})
-├─ Leader Created At: {leader.get('account_created', 'N/A')}
-├─ Leader Last Login: {leader.get('last_login', 'N/A')}
-├─ Leader BR Points: {leader.get('br_rank_points', 'N/A')}
-└─ Leader CS Points: {leader.get('cs_rank_points', 'N/A')}
+            # Pet Info
+            embed.add_field(name="🐾 PET DETAILS", value=f"""```yaml
+Equipped?: {'Yes' if pet else 'No'}
+Pet Name: {pet.get('name', 'N/A')}
+Pet Exp: {pet.get('exp', 'N/A')}
+Pet Level: {pet.get('level', 'N/A')}
+```""", inline=False)
 
-```"""
+            # Guild Info
+            embed.add_field(name="🛡️ GUILD INFO", value=f"""```yaml
+Guild Name: {guild.get('name', 'N/A')}
+Guild ID: {guild.get('id', 'N/A')}
+Guild Level: {guild.get('level', 'N/A')}
+Live Members: {guild.get('members', 'N/A')}
+```""", inline=False)
+
+            # Leader Info
+            embed.add_field(name="🏅 LEADER INFO", value=f"""```yaml
+Leader Name: {leader.get('nickname', 'N/A')}
+Leader UID: {leader.get('uid', 'N/A')}
+Leader Level: {leader.get('level', 'N/A')} (Exp: {leader.get('exp', 'N/A')})
+Created At: {leader.get('account_created', 'N/A')}
+Last Login: {leader.get('last_login', 'N/A')}
+BR Points: {leader.get('br_rank_points', 'N/A')}
+CS Points: {leader.get('cs_rank_points', 'N/A')}
+```""", inline=False)
 
             embed.set_image(url="https://i.imgur.com/ajygBes.gif")
+            embed.set_footer(text="📌 Dev</>!      GAMER SABBIR")
 
-            embed.set_footer(text="📌 Dev</> !   GAMER SABBIR")
-            await ctx.send(f"{ctx.author.mention}\n{message}")
+            await ctx.send(f"{ctx.author.mention}", embed=embed)
 
         except Exception as e:
             await ctx.send(f"{ctx.author.mention} ❌ Error fetching player info:\n```{str(e)}```")
-
 
 bot.run(TOKEN)
