@@ -198,6 +198,7 @@ async def player_info(ctx, uid: str):
             embed.add_field(
                 name="👤 Account Info",
                 value=(
+                    f"**• Name:** `{info.get('uid', 'N/A')}`\n"
                     f"**• UID:** `{info.get('uid', 'N/A')}`\n"
                     f"**• Level:** `{info.get('level', 'N/A')}` (Exp: `{info.get('exp', 'N/A')}`)\n"
                     f"**• Region:** `{info.get('region', 'N/A')}`\n"
