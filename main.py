@@ -191,7 +191,7 @@ async def player_info(ctx, uid: str):
 
             ascii_info = f"""
 ┌ 👤 ACCOUNT BASIC INFO
-├─ Name: {info.get('nickname', 'N/A')}
+├─ Name: {info.get('nikname', 'N/A')}
 ├─ UID: {info.get('uid', 'N/A')}
 ├─ Level: {info.get('level', 'N/A')} (Exp: {info.get('exp', 'N/A')})
 ├─ Region: {info.get('region', 'N/A')}
@@ -220,10 +220,11 @@ async def player_info(ctx, uid: str):
 
 ┌ 🛡️ GUILD INFO
 ├─ Guild Name: {guild.get('name', 'N/A')}
-├─ Guild ID: {guild.get('id', 'N/A')}
+├─ Guild ID: {guild.get('guild_id', 'N/A')}
 ├─ Guild Level: {guild.get('level', 'N/A')}
 ├─ Live Members: {guild.get('members', 'N/A')}
-└─ Leader Info:
+└─
+┌    Leader Info:
 ├─ Leader Name: {leader.get('nickname', 'N/A')}
 ├─ Leader UID: {leader.get('uid', 'N/A')}
 ├─ Leader Level: {leader.get('level', 'N/A')} (Exp: {leader.get('exp', 'N/A')})
