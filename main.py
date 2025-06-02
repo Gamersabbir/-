@@ -270,7 +270,7 @@ async def player_info(ctx, uid: str):
                         f"**Likes:** `{leader.get('likes', 'N/A')} ❤️`\n"
                         f"**BR Points:** `{leader.get('br_rank_points', 'N/A')} 🏆`"
                         f"**Account Created:** `{leader.get('account_created', 'N/A')} 🕰️`\n"
-                    f"**Last Login:** `{leader.get('last_login', 'N/A')} 🔑`"
+                        f"**Last Login:** `{leader.get('last_login', 'N/A')} 🔑`"
                     ),
                     inline=False
                 )
