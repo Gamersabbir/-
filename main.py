@@ -6,6 +6,7 @@ from flask import Flask
 import threading
 import aiohttp
 from utils import check_ban
+import requests
 
 app = Flask(__name__)
 
@@ -82,57 +83,6 @@ async def change_language(ctx, lang_code: str):
 
 
 
-@bot.command(name="ff", aliases=["FF", "Ff"])
-@is_registered_channel()
-async def fetch_player_info(ctx, uid: str):
-    if not uid.isdigit():
-        await ctx.send("❌ Invalid UID! Please use: `!ff 1234567890`")
-        return
-
-    api_url = f"https://player-track.vercel.app/info?uid={uid}"
-    
-    async with ctx.typing():
-        try:
-            async with aiohttp.ClientSession() as session:
-                async with session.get(api_url) as response:
-                    data = await response.json()
-        except Exception as e:
-            await ctx.send(f"⚠️ Error fetching data: `{e}`")
-            return
-
-        if not data.get("data"):
-            await ctx.send("❌ Player info not found or invalid UID.")
-            return
-
-        p = data["data"]["player_info"]
-        pet = data["data"].get("petInfo", {})
-        guild = data["data"].get("guildInfo", {})
-        owner = guild.get("owner_basic_info", {})
-
-        embed = discord.Embed(
-            title=f"🎮 {p.get('nikname', 'Unknown')}",
-            color=discord.Color.green()
-        )
-        embed.add_field(name="🆔 UID", value=uid, inline=True)
-        embed.add_field(name="⭐ Level", value=str(p.get("level", "N/A")), inline=True)
-        embed.add_field(name="👍 Likes", value=str(p.get("likes", "N/A")), inline=True)
-        embed.add_field(name="📆 Created", value=p.get("account_created", "N/A"), inline=True)
-        embed.add_field(name="🕹️ Last Login", value=p.get("last_login", "N/A"), inline=True)
-        embed.add_field(name="🗺️ Region", value=p.get("region", "N/A"), inline=True)
-
-        # Pet Info
-        if pet:
-            embed.add_field(name="🐾 Pet", value=f"{pet.get('name', '')} (Lv{pet.get('level', '?')})", inline=True)
-
-        # Guild Info
-        if guild:
-            embed.add_field(name="🏰 Guild", value=f"{guild.get('name', 'N/A')} (Lv{guild.get('level', 'N/A')})", inline=False)
-
-        if owner:
-            embed.add_field(name="👑 Guild Owner", value=f"{owner.get('nickname', '')} (Lv{owner.get('level', '')})", inline=True)
-
-        embed.set_footer(text="📌 Data from player-track.vercel.app")
-        await ctx.send(embed=embed)
 
 
 
@@ -210,5 +160,89 @@ async def check_ban_command(ctx):
         embed.set_thumbnail(url=ctx.author.avatar.url if ctx.author.avatar else ctx.author.default_avatar.url)
         embed.set_footer(text="📌  Dev</>!      GAMER SABBIR")
         await ctx.send(f"{ctx.author.mention}", embed=embed)
+
+
+
+
+
+
+# ---------- নতুন playerinfo কমান্ড ----------
+@bot.command(name="info")
+@is_registered_channel()
+async def player_info(ctx, uid: str):
+    if not uid.isdigit():
+        await ctx.send(f"{ctx.author.mention} ❌ Invalid UID!")
+        return
+
+    url = f"https://player-track.vercel.app/info?uid={uid}"
+    async with ctx.typing():
+        try:
+            response = requests.get(url)
+            data = response.json()
+            info = data["data"]["player_info"]
+            guild = data["data"].get("guildInfo", {})
+            leader = guild.get("owner_basic_info", {})
+            pet = data["data"].get("petInfo", {})
+
+            embed = discord.Embed(
+                title=f"📘 Player Info for {info['nickname']}",
+                color=discord.Color.blue()
+            )
+            embed.add_field(name="📊 Account Stats", value=(
+                f"**UID:** `{info['uid']}`\n"
+                f"**Level:** `{info['level']} (Exp: {info['exp']})`\n"
+                f"**Region:** `{info['region']}`\n"
+                f"**Likes:** `{info['likes']}`\n"
+                f"**Honor Score:** `{info['honor_score']}`\n"
+                f"**Signature:** {info['signature']}"
+            ), inline=False)
+
+            embed.add_field(name="🧥 Overview", value=(
+                f"**Avatar ID:** `{info['avatar_id']}`\n"
+                f"**Banner ID:** `{info['banner_id']}`\n"
+                f"**Title ID:** `{info['title_id']}`"
+            ), inline=False)
+
+            embed.add_field(name="📅 Activity", value=(
+                f"**OB Version:** `{info['release_version']}`\n"
+                f"**BR Points:** `{info['br_rank_points']}`\n"
+                f"**CS Points:** `{info['cs_rank_points']}`\n"
+                f"**Created:** `{info['account_created']}`\n"
+                f"**Last Login:** `{info['last_login']}`"
+            ), inline=False)
+
+            embed.add_field(name="🐾 Pet Info", value=(
+                f"**Name:** `{pet.get('name', 'N/A')}`\n"
+                f"**Level:** `{pet.get('level', 'N/A')}`\n"
+                f"**Exp:** `{pet.get('exp', 'N/A')}`"
+            ), inline=False)
+
+            embed.add_field(name="🛡 Guild Info", value=(
+                f"**Guild Name:** `{guild.get('name', 'N/A')}`\n"
+                f"**Guild Level:** `{guild.get('level', 'N/A')}`\n"
+                f"**Members:** `{guild.get('members', 'N/A')}`"
+            ), inline=False)
+
+            embed.add_field(name="🏅 Leader Info", value=(
+                f"**Name:** `{leader.get('nickname', 'N/A')}`\n"
+                f"**UID:** `{leader.get('uid', 'N/A')}`\n"
+                f"**Level:** `{leader.get('level', 'N/A')} (Exp: {leader.get('exp', 'N/A')})`\n"
+                f"**Created:** `{leader.get('account_created', 'N/A')}`\n"
+                f"**Last Login:** `{leader.get('last_login', 'N/A')}`"
+            ), inline=False)
+
+            embed.set_footer(text="📌 Dev</>!      GAMER SABBIR")
+            await ctx.send(f"{ctx.author.mention}", embed=embed)
+
+        except Exception as e:
+            await ctx.send(f"❌ Error fetching player info:
+```{str(e)}```")
+
+
+
+
+
+
+
 
 bot.run(TOKEN)
