@@ -167,6 +167,8 @@ async def check_ban_command(ctx):
 
 
 # ---------- নতুন playerinfo কমান্ড ----------
+
+
 @bot.command(name="info")
 @is_registered_channel()
 async def player_info(ctx, uid: str):
@@ -175,40 +177,48 @@ async def player_info(ctx, uid: str):
         return
 
     url = f"https://player-track.vercel.app/info?uid={uid}"
+
     async with ctx.typing():
         try:
-            response = requests.get(url)
-            data = response.json()
-            info = data["data"]["player_info"]
-            guild = data["data"].get("guildInfo", {})
+            async with aiohttp.ClientSession() as session:
+                async with session.get(url) as resp:
+                    if resp.status != 200:
+                        raise Exception(f"API returned status {resp.status}")
+                    data = await resp.json()
+
+            player_data = data.get("data", {})
+            info = player_data.get("player_info", {})
+            if not info:
+                raise Exception("No player_info found in API response.")
+            guild = player_data.get("guildInfo", {})
             leader = guild.get("owner_basic_info", {})
-            pet = data["data"].get("petInfo", {})
+            pet = player_data.get("petInfo", {})
 
             embed = discord.Embed(
-                title=f"📘 Player Info for {info['nickname']}",
+                title=f"📘 Player Info for {info.get('nickname', 'N/A')}",
                 color=discord.Color.blue()
             )
             embed.add_field(name="📊 Account Stats", value=(
-                f"**UID:** `{info['uid']}`\n"
-                f"**Level:** `{info['level']} (Exp: {info['exp']})`\n"
-                f"**Region:** `{info['region']}`\n"
-                f"**Likes:** `{info['likes']}`\n"
-                f"**Honor Score:** `{info['honor_score']}`\n"
-                f"**Signature:** {info['signature']}"
+                f"**UID:** `{info.get('uid', 'N/A')}`\n"
+                f"**Level:** `{info.get('level', 'N/A')} (Exp: {info.get('exp', 'N/A')})`\n"
+                f"**Region:** `{info.get('region', 'N/A')}`\n"
+                f"**Likes:** `{info.get('likes', 'N/A')}`\n"
+                f"**Honor Score:** `{info.get('honor_score', 'N/A')}`\n"
+                f"**Signature:** {info.get('signature', 'N/A')}"
             ), inline=False)
 
             embed.add_field(name="🧥 Overview", value=(
-                f"**Avatar ID:** `{info['avatar_id']}`\n"
-                f"**Banner ID:** `{info['banner_id']}`\n"
-                f"**Title ID:** `{info['title_id']}`"
+                f"**Avatar ID:** `{info.get('avatar_id', 'N/A')}`\n"
+                f"**Banner ID:** `{info.get('banner_id', 'N/A')}`\n"
+                f"**Title ID:** `{info.get('title_id', 'N/A')}`"
             ), inline=False)
 
             embed.add_field(name="📅 Activity", value=(
-                f"**OB Version:** `{info['release_version']}`\n"
-                f"**BR Points:** `{info['br_rank_points']}`\n"
-                f"**CS Points:** `{info['cs_rank_points']}`\n"
-                f"**Created:** `{info['account_created']}`\n"
-                f"**Last Login:** `{info['last_login']}`"
+                f"**OB Version:** `{info.get('release_version', 'N/A')}`\n"
+                f"**BR Points:** `{info.get('br_rank_points', 'N/A')}`\n"
+                f"**CS Points:** `{info.get('cs_rank_points', 'N/A')}`\n"
+                f"**Created:** `{info.get('account_created', 'N/A')}`\n"
+                f"**Last Login:** `{info.get('last_login', 'N/A')}`"
             ), inline=False)
 
             embed.add_field(name="🐾 Pet Info", value=(
@@ -235,8 +245,8 @@ async def player_info(ctx, uid: str):
             await ctx.send(f"{ctx.author.mention}", embed=embed)
 
         except Exception as e:
-            await ctx.send(f"❌ Error fetching player info:
-```{str(e)}```")
+            await ctx.send(f"{ctx.author.mention} ❌ Error fetching player info:\n```{str(e)}```")
+
 
 
 
