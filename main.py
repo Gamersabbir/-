@@ -52,7 +52,7 @@ async def setup(ctx):
     server_id = ctx.guild.id
     channel_id = ctx.channel.id
     registered_channels[server_id] = channel_id
-    await ctx.send(f"এই সার্ভারের জন্য এই চ্যানেল (ID: {channel_id}) রেজিস্টার করা হলো। এখন থেকে এই চ্যানেলেই কমান্ড চলবে।")
+    await ctx.send(f"এই সার্ভারের জন্য এই চ্যানেল (ID: <#{channel_id}>) রেজিস্টার করা হলো। এখন থেকে এই চ্যানেলেই কমান্ড চলবে।")
 
 # ---------- চ্যানেল চেক করার চেক ----------
 def is_registered_channel():
@@ -84,10 +84,7 @@ async def change_language(ctx, lang_code: str):
 
 
 
-
-
-
-@bot.command(name="ID")
+@bot.command(name="ID", aliases=["id", "Id"])
 @is_registered_channel()  # শুধু রেজিস্টার্ড চ্যানেলে কাজ করবে
 async def check_ban_command(ctx):
     content = ctx.message.content
@@ -169,7 +166,7 @@ async def check_ban_command(ctx):
 # ---------- নতুন playerinfo কমান্ড ----------
 
 
-@bot.command(name="info")
+@bot.command(name="INFO", aliases=["info", "Info"])
 @is_registered_channel()
 async def player_info(ctx, uid: str):
     if not uid.isdigit():
@@ -241,16 +238,15 @@ async def player_info(ctx, uid: str):
                 f"**Last Login:** `{leader.get('last_login', 'N/A')}`"
             ), inline=False)
 
+
+
+            embed.set_image(url="https://i.imgur.com/ajygBes.gif")
+
             embed.set_footer(text="📌 Dev</>!      GAMER SABBIR")
             await ctx.send(f"{ctx.author.mention}", embed=embed)
 
         except Exception as e:
             await ctx.send(f"{ctx.author.mention} ❌ Error fetching player info:\n```{str(e)}```")
-
-
-
-
-
 
 
 
