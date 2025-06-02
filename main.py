@@ -84,7 +84,7 @@ async def change_language(ctx, lang_code: str):
 
 
 
-@bot.command(name="ID", aliases=["id", "Id"])
+@bot.command(name="ID")
 @is_registered_channel()  # শুধু রেজিস্টার্ড চ্যানেলে কাজ করবে
 async def check_ban_command(ctx):
     content = ctx.message.content
@@ -166,7 +166,7 @@ async def check_ban_command(ctx):
 # ---------- নতুন playerinfo কমান্ড ----------
 
 
-@bot.command(name="INFO", aliases=["info", "Info"])
+@bot.command(name="INFO")
 @is_registered_channel()
 async def player_info(ctx, uid: str):
     if not uid.isdigit():
