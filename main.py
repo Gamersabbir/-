@@ -189,22 +189,38 @@ async def player_info(ctx, uid: str):
             pet = player_data.get("petInfo", {})
             leader = guild.get("owner_basic_info", {}) if guild else {}
 
+            # Level based color (gold for high-level players)
+            level = int(info.get("level", 0))
+            if level >= 70:
+                color = discord.Color.gold()
+            elif level >= 50:
+                color = discord.Color.blue()
+            else:
+                color = discord.Color.teal()
+
+            # Clean signature text (remove color codes)
+            import re
+            signature = info.get('signature', 'N/A')
+            clean_signature = re.sub(r'\[.*?\]', '', signature)
+
             embed = discord.Embed(
-                title=f"📘 PLAYER PROFILE: {info.get('nikname', 'N/A')}",
-                description="**Here’s the player overview fetched from the database:**",
-                color=discord.Color.from_str("#00c3ff")
+                title=f"📘 Player Profile — {info.get('nikname', 'N/A')}",
+                description="Here is the detailed player overview fetched from the database:",
+                color=color
             )
+
+            embed.set_thumbnail(url=ctx.author.avatar.url if ctx.author.avatar else ctx.author.default_avatar.url)
 
             embed.add_field(
                 name="👤 Account Info",
                 value=(
-                    f"**• Name:** `{info.get('uid', 'N/A')}`\n"
-                    f"**• UID:** `{info.get('uid', 'N/A')}`\n"
-                    f"**• Level:** `{info.get('level', 'N/A')}` (Exp: `{info.get('exp', 'N/A')}`)\n"
-                    f"**• Region:** `{info.get('region', 'N/A')}`\n"
-                    f"**• Likes:** `{info.get('likes', 'N/A')}`\n"
-                    f"**• Honor Score:** `{info.get('honor_score', 'N/A')}`\n"
-                    f"**• Signature:** `{info.get('signature', 'N/A')}`"
+                    f"**Name:** `{info.get('nikname', 'N/A')}`\n"
+                    f"**UID:** `{info.get('uid', 'N/A')}`\n"
+                    f"**Level:** `{info.get('level', 'N/A')}` 🎖️ (Exp: `{info.get('exp', 'N/A')}`)\n"
+                    f"**Region:** `{info.get('region', 'N/A')}` 🌍\n"
+                    f"**Likes:** `{info.get('likes', 'N/A')} ❤️`\n"
+                    f"**Honor Score:** `{info.get('honor_score', 'N/A')} 🏅`\n"
+                    f"**Signature:** `{clean_signature.strip()}`"
                 ),
                 inline=False
             )
@@ -212,12 +228,12 @@ async def player_info(ctx, uid: str):
             embed.add_field(
                 name="🎮 Activity",
                 value=(
-                    f"**• OB Version:** `{info.get('release_version', 'N/A')}`\n"
-                    f"**• BR Rank:** `{info.get('br_rank_points', 'N/A')}`\n"
-                    f"**• CS Points:** `{info.get('cs_rank_points', 'N/A')}`\n"
-                    f"**• BP Badges:** `{info.get('bp_badges', 'N/A')}`\n"
-                    f"**• Created:** `{info.get('account_created', 'N/A')}`\n"
-                    f"**• Last Login:** `{info.get('last_login', 'N/A')}`"
+                    f"**OB Version:** `{info.get('release_version', 'N/A')} 🚀`\n"
+                    f"**BR Rank:** `{info.get('br_rank_points', 'N/A')} 🏆`\n"
+                    f"**CS Points:** `{info.get('cs_rank_points', 'N/A')} ⚔️`\n"
+                    f"**BP Badges:** `{info.get('bp_badges', 'N/A')} 🎟️`\n"
+                    f"**Account Created:** `{info.get('account_created', 'N/A')} 🕰️`\n"
+                    f"**Last Login:** `{info.get('last_login', 'N/A')} 🔑`"
                 ),
                 inline=False
             )
@@ -225,10 +241,10 @@ async def player_info(ctx, uid: str):
             embed.add_field(
                 name="🐾 Pet Info",
                 value=(
-                    "No pet equipped." if not pet else
-                    f"**• Name:** `{pet.get('name', 'N/A')}`\n"
-                    f"**• Level:** `{pet.get('level', 'N/A')}`\n"
-                    f"**• Exp:** `{pet.get('exp', 'N/A')}`"
+                    "No pet equipped. 🐾" if not pet else
+                    f"**Name:** `{pet.get('name', 'N/A')}` 🐶\n"
+                    f"**Level:** `{pet.get('level', 'N/A')}` 📈\n"
+                    f"**Exp:** `{pet.get('exp', 'N/A')}` ⭐"
                 ),
                 inline=False
             )
@@ -237,32 +253,31 @@ async def player_info(ctx, uid: str):
                 embed.add_field(
                     name="🛡️ Guild Info",
                     value=(
-                        f"**• Name:** `{guild.get('name', 'N/A')}`\n"
-                        f"**• ID:** `{guild.get('guild_id', 'N/A')}`\n"
-                        f"**• Level:** `{guild.get('level', 'N/A')}`\n"
-                        f"**• Members:** `{guild.get('members', 'N/A')}`"
+                        f"**Name:** `{guild.get('name', 'N/A')}` 🏰\n"
+                        f"**ID:** `{guild.get('guild_id', 'N/A')}`\n"
+                        f"**Level:** `{guild.get('level', 'N/A')}` ⬆️\n"
+                        f"**Members:** `{guild.get('members', 'N/A')}` 👥"
                     ),
                     inline=False
                 )
                 embed.add_field(
                     name="👑 Guild Leader",
                     value=(
-                        f"**• Name:** `{leader.get('nickname', 'N/A')}`\n"
-                        f"**• Level:** `{leader.get('level', 'N/A')}`\n"
-                        f"**• UID:** `{leader.get('uid', 'N/A')}`\n"
-                        f"**• BR Points:** `{leader.get('br_rank_points', 'N/A')}`"
+                        f"**Name:** `{leader.get('nickname', 'N/A')}` 👑\n"
+                        f"**Level:** `{leader.get('level', 'N/A')}` 📈\n"
+                        f"**UID:** `{leader.get('uid', 'N/A')}`\n"
+                        f"**BR Points:** `{leader.get('br_rank_points', 'N/A')} 🏆`"
                     ),
                     inline=False
                 )
             else:
                 embed.add_field(
                     name="🛡️ Guild Info",
-                    value="**Player is not in any guild.**",
+                    value="Player is not in any guild. ❌",
                     inline=False
                 )
 
-            embed.set_thumbnail(url=ctx.author.avatar.url if ctx.author.avatar else ctx.author.default_avatar.url)
-
+            # Player banner or default image
             embed.set_image(url="https://i.imgur.com/ajygBes.gif")
 
             embed.set_footer(text="📌 Dev</>  !  GAMER SABBIR", icon_url="https://i.imgur.com/E8yZ4MP.png")
