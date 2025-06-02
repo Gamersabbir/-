@@ -256,6 +256,7 @@ async def player_info(ctx, uid: str):
                         f"**Name:** `{guild.get('name', 'N/A')}` 🏰\n"
                         f"**ID:** `{guild.get('guild_id', 'N/A')}`\n"
                         f"**Level:** `{guild.get('level', 'N/A')}` ⬆️\n"
+                        f"**Capacity:** `{guild.get('capacity', 'N/A')}` 🏰\n"
                         f"**Members:** `{guild.get('members', 'N/A')}` 👥"
                     ),
                     inline=False
@@ -266,7 +267,10 @@ async def player_info(ctx, uid: str):
                         f"**Name:** `{leader.get('nickname', 'N/A')}` 👑\n"
                         f"**Level:** `{leader.get('level', 'N/A')}` 📈\n"
                         f"**UID:** `{leader.get('uid', 'N/A')}`\n"
+                        f"**Likes:** `{leader.get('likes', 'N/A')} ❤️`\n"
                         f"**BR Points:** `{leader.get('br_rank_points', 'N/A')} 🏆`"
+                        f"**Account Created:** `{leader.get('account_created', 'N/A')} 🕰️`\n"
+                    f"**Last Login:** `{leader.get('last_login', 'N/A')} 🔑`"
                     ),
                     inline=False
                 )
