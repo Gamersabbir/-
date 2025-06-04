@@ -58,7 +58,7 @@ A Discord bot to check if a Free Fire account is banned, using a user ID. Also i
 
 ২️⃣ শুধু সেই চ্যানেলেই বট কাজ করবে।.
 
-৩️⃣ `!ID`, `!lang`, `!guilds`, `!help` – সব কমান্ড শুধু সেটআপ চ্যানেলে চলবে।.
+৩️⃣ `!ID`, `!INFO`, `!lang`, `!guilds`, `!help` – সব কমান্ড শুধু সেটআপ চ্যানেলে চলবে।.
 
 ℹ️ `!help` কমান্ড দিয়ে সব নিয়ম ও কমান্ড লিস্ট দেখতে পারবেন।.
 
