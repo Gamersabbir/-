@@ -78,6 +78,7 @@ A Discord bot to check if a Free Fire account is banned, using a user ID. Also i
 
 
 ### `!ID <user_id>`
+### `!INFO <user_id>`
 Check whether a Free Fire account is **banned** or **not**.
 
 - 📥 **Input:** a user ID (UID)
