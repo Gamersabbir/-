@@ -183,13 +183,13 @@ async def player_info(ctx, uid: str):
                         raise Exception(f"API returned status {resp.status}")
                     data = await resp.json()
 
-            player_data = data.get("data", {})
-            info = player_data.get("player_info", {})
-            guild = player_data.get("guildInfo")
-            pet = player_data.get("petInfo", {})
-            leader = guild.get("owner_basic_info", {}) if guild else {}
+            info = data["data"].get("basicInfo", {})
+            pet = data["data"].get("petInfo", {})
+            clan = data["data"].get("clanBasicInfo", {})
+            social = data["data"].get("socialInfo", {})
+            leader = data["data"].get("captainBasicInfo", {})
 
-            # Level based color (gold for high-level players)
+            # Level-based color
             level = int(info.get("level", 0))
             if level >= 70:
                 color = discord.Color.gold()
@@ -198,14 +198,14 @@ async def player_info(ctx, uid: str):
             else:
                 color = discord.Color.teal()
 
-            # Clean signature text (remove color codes)
+            # Clean signature
             import re
-            signature = info.get('signature', 'N/A')
+            signature = social.get('signature', 'N/A')
             clean_signature = re.sub(r'\[.*?\]', '', signature)
 
             embed = discord.Embed(
-                title=f"📘 Player Profile — {info.get('nikname', 'N/A')}",
-                description="Here is the detailed player overview fetched from the database:",
+                title=f"📘 Player Profile — {info.get('nickname', 'N/A')}",
+                description="Player info fetched using NeoTrackr API:",
                 color=color
             )
 
@@ -214,12 +214,12 @@ async def player_info(ctx, uid: str):
             embed.add_field(
                 name="👤 Account Info",
                 value=(
-                    f"**Name:** `{info.get('nikname', 'N/A')}`\n"
-                    f"**UID:** `{info.get('uid', 'N/A')}`\n"
+                    f"**Name:** `{info.get('nickname', 'N/A')}`\n"
+                    f"**UID:** `{info.get('accountId', 'N/A')}`\n"
                     f"**Level:** `{info.get('level', 'N/A')}` 🎖️ (Exp: `{info.get('exp', 'N/A')}`)\n"
                     f"**Region:** `{info.get('region', 'N/A')}` 🌍\n"
-                    f"**Likes:** `{info.get('likes', 'N/A')} ❤️`\n"
-                    f"**Honor Score:** `{info.get('honor_score', 'N/A')} 🏅`\n"
+                    f"**Likes:** `{info.get('liked', 'N/A')} ❤️`\n"
+                    f"**Honor Score:** `100 🏅`\n"  # Credit score as fixed value
                     f"**Signature:** `{clean_signature.strip()}`"
                 ),
                 inline=False
@@ -228,12 +228,11 @@ async def player_info(ctx, uid: str):
             embed.add_field(
                 name="🎮 Activity",
                 value=(
-                    f"**OB Version:** `{info.get('release_version', 'N/A')} 🚀`\n"
-                    f"**BR Rank:** `{info.get('br_rank_points', 'N/A')} 🏆`\n"
-                    f"**CS Points:** `{info.get('cs_rank_points', 'N/A')} ⚔️`\n"
-                    f"**BP Badges:** `{info.get('bp_badges', 'N/A')} 🎟️`\n"
-                    f"**Account Created:** `{info.get('account_created', 'N/A')} 🕰️`\n"
-                    f"**Last Login:** `{info.get('last_login', 'N/A')} 🔑`"
+                    f"**OB Version:** `{info.get('releaseVersion', 'N/A')} 🚀`\n"
+                    f"**BR Rank:** `{info.get('rankingPoints', 'N/A')} 🏆`\n"
+                    f"**CS Points:** `{info.get('csRankingPoints', 'N/A')} ⚔️`\n"
+                    f"**Account Created:** `{info.get('createAt', 'N/A')} 🕰️`\n"
+                    f"**Last Login:** `{info.get('lastLoginAt', 'N/A')} 🔑`"
                 ),
                 inline=False
             )
@@ -249,15 +248,14 @@ async def player_info(ctx, uid: str):
                 inline=False
             )
 
-            if guild and guild.get("name"):
+            if clan and clan.get("clanName"):
                 embed.add_field(
                     name="🛡️ Guild Info",
                     value=(
-                        f"**Name:** `{guild.get('name', 'N/A')}` 🏰\n"
-                        f"**ID:** `{guild.get('guild_id', 'N/A')}`\n"
-                        f"**Level:** `{guild.get('level', 'N/A')}` ⬆️\n"
-                        f"**Capacity:** `{guild.get('capacity', 'N/A')}` 🏰\n"
-                        f"**Members:** `{guild.get('members', 'N/A')}` 👥"
+                        f"**Name:** `{clan.get('clanName', 'N/A')}` 🏰\n"
+                        f"**ID:** `{clan.get('clanId', 'N/A')}`\n"
+                        f"**Level:** `{clan.get('clanLevel', 'N/A')}` ⬆️\n"
+                        f"**Members:** `{clan.get('memberNum', 'N/A')}` 👥"
                     ),
                     inline=False
                 )
@@ -266,11 +264,10 @@ async def player_info(ctx, uid: str):
                     value=(
                         f"**Name:** `{leader.get('nickname', 'N/A')}` 👑\n"
                         f"**Level:** `{leader.get('level', 'N/A')}` 📈\n"
-                        f"**UID:** `{leader.get('uid', 'N/A')}`\n"
-                        f"**Likes:** `{leader.get('likes', 'N/A')} ❤️`\n"
-                        f"**BR Points:** `{leader.get('br_rank_points', 'N/A')} 🏆`"
-                        f"**Account Created:** `{leader.get('account_created', 'N/A')} 🕰️`\n"
-                        f"**Last Login:** `{leader.get('last_login', 'N/A')} 🔑`"
+                        f"**UID:** `{leader.get('accountId', 'N/A')}`\n"
+                        f"**Likes:** `{leader.get('liked', 'N/A')} ❤️`\n"
+                        f"**BR Points:** `{leader.get('rankingPoints', 'N/A')} 🏆`\n"
+                        f"**Last Login:** `{leader.get('lastLoginAt', 'N/A')} 🔑`"
                     ),
                     inline=False
                 )
@@ -281,14 +278,13 @@ async def player_info(ctx, uid: str):
                     inline=False
                 )
 
-            # Player banner or default image
             embed.set_image(url="https://i.imgur.com/ajygBes.gif")
-
             embed.set_footer(text="📌 Dev</>  !  GAMER SABBIR", icon_url="https://i.imgur.com/E8yZ4MP.png")
 
             await ctx.send(f"{ctx.author.mention}", embed=embed)
 
         except Exception as e:
             await ctx.send(f"{ctx.author.mention} ❌ Error fetching player info:\n```{str(e)}```")
+
 
 bot.run(TOKEN)
