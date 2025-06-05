@@ -227,7 +227,7 @@ async def player_info(ctx, uid: str):
     inline=False
 )
 
-            )
+            
 
             embed.add_field(
                 name="🎮 Activity",
