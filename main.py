@@ -211,20 +211,22 @@ async def player_info(ctx, uid: str):
 
             embed.set_thumbnail(url=ctx.author.avatar.url if ctx.author.avatar else ctx.author.default_avatar.url)
 
-            embed.add_field(
-                name="👤 Account Info",
-                value=(
-                    f"**Name:** `{info.get('nickname', 'N/A')}`\n"
-                    f"**UID:** `{info.get('accountId', 'N/A')}`\n"
-                    f"**Level:** `{info.get('level', 'N/A')}` 🎖️ (Exp: `{info.get('exp', 'N/A')}`)\n"
-                    f"**Region:** `{info.get('region', 'N/A')}` 🌍\n"
-                    f"**Likes:** `{info.get('liked', 'N/A')} ❤️`\n"
-                   credit = data["data"].get("creditScoreInfo", {})...
-                    f"**Honor Score:** `{credit.get('creditScore', 'N/A')} 🏅`\n"
+            credit = data["data"].get("creditScoreInfo", {})  # ⬅️ Add this line
 
-                    f"**Signature:** `{clean_signature.strip()}`"
-                ),
-                inline=False
+            embed.add_field(
+                    name="👤 Account Info",
+    value=(
+        f"**Name:** `{info.get('nickname', 'N/A')}`\n"
+        f"**UID:** `{info.get('accountId', 'N/A')}`\n"
+        f"**Level:** `{info.get('level', 'N/A')}` 🎖️ (Exp: `{info.get('exp', 'N/A')}`)\n"
+        f"**Region:** `{info.get('region', 'N/A')}` 🌍\n"
+        f"**Likes:** `{info.get('liked', 'N/A')} ❤️`\n"
+        f"**Honor Score:** `{credit.get('creditScore', 'N/A')} 🏅`\n"  # ✅ Now dynamic
+         f"**Signature:** `{clean_signature.strip()}`"
+    ),
+    inline=False
+)
+
             )
 
             embed.add_field(
