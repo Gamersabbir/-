@@ -219,7 +219,9 @@ async def player_info(ctx, uid: str):
                     f"**Level:** `{info.get('level', 'N/A')}` 🎖️ (Exp: `{info.get('exp', 'N/A')}`)\n"
                     f"**Region:** `{info.get('region', 'N/A')}` 🌍\n"
                     f"**Likes:** `{info.get('liked', 'N/A')} ❤️`\n"
-                    f"**Honor Score:** `100 🏅`\n"  # Credit score as fixed value
+                   credit = data["data"].get("creditScoreInfo", {})...
+                    f"**Honor Score:** `{credit.get('creditScore', 'N/A')} 🏅`\n"
+
                     f"**Signature:** `{clean_signature.strip()}`"
                 ),
                 inline=False
