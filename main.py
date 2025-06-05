@@ -205,7 +205,7 @@ async def player_info(ctx, uid: str):
 
             embed = discord.Embed(
                 title=f"📘 Player Profile — {info.get('nickname', 'N/A')}",
-                description="Player info fetched using NeoTrackr API:",
+                description="Player info fetched using GAMER CORP.Official API:",
                 color=color
             )
 
