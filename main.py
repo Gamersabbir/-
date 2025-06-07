@@ -173,7 +173,7 @@ async def player_info(ctx, uid: str):
         await ctx.send(f"{ctx.author.mention} ❌ Invalid UID!")
         return
 
-    url = f"https://neotrackr.onrender.com/info?id={uid}"
+    url = f"https://api-info-nxx.onrender.com/info?uid={uid}"
 
     async with ctx.typing():
         try:
