@@ -159,11 +159,67 @@ async def check_ban_command(ctx):
         await ctx.send(f"{ctx.author.mention}", embed=embed)
 
 
+# ---------- নতুন playerinfo কমান্ড ----------LI..
+
+@bot.command(name="LIKE")
+@is_registered_channel()
+async def like_command(ctx, uid: str):
+    if not uid.isdigit():
+        await ctx.send(f"{ctx.author.mention} ❌ Invalid UID! উদাহরণ: `!like 123456789`")
+        return
+
+    url = f"https://like-apirexx.up.railway.app/like?uid={uid}"
+
+    async with ctx.typing():
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(url) as resp:
+                    data = await resp.json()
+
+            # ✅ যদি UID ভুল হয় (status 400)
+            if data.get("status") == 400:
+                await ctx.send(
+                    f"{ctx.author.mention} ❌ **Error:** {data.get('error', 'Invalid UID')}\n"
+                    f"📌 Message: {data.get('message', 'Please enter a valid numeric UID.')}"
+                )
+                return
+
+            # ✅ যদি লাইক সফলভাবে যুক্ত হয়
+            if data.get("status") == 1:
+                embed = discord.Embed(
+                    title="🔥 Free Fire Like Added!",
+                    description=(
+                        f"👤 **Nickname:** `{data.get('nickname')}`\n"
+                        f"🌍 **Region:** `{data.get('region')}`\n"
+                        f"❤️ **Likes Before:** `{data.get('likes_before')}`\n"
+                        f"➕ **Likes Added:** `{data.get('likes_added')}`\n"
+                        f"💯 **Likes After:** `{data.get('likes_after')}`\n"
+                        f"🆔 **UID:** `{data.get('uid')}`"
+                    ),
+                    color=discord.Color.purple()
+                )
+
+                embed.set_thumbnail(url=ctx.author.avatar.url if ctx.author.avatar else ctx.author.default_avatar.url)
+      embed.set_image(url="https://i.imgur.com/ajygBes.gif")
+            embed.set_footer(text="📌 Dev</>  !  GAMER SABBIR", icon_url="https://i.imgur.com/E8yZ4MP.png")
+                await ctx.send(f"{ctx.author.mention}", embed=embed)
+                return
+
+            # ❌ অন্য যেকোনো সমস্যা
+            await ctx.send(f"{ctx.author.mention} ⚠️ Unexpected error. Please try again later.")
+
+        except Exception as e:
+            await ctx.send(f"{ctx.author.mention} ❌ Error fetching like info:\n```{str(e)}```")
 
 
 
 
-# ---------- নতুন playerinfo কমান্ড ----------
+
+
+
+
+
+# ---------- নতুন playerinfo কমান্ড ----------IN..
 
 
 @bot.command(name="INFO")
