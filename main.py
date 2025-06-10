@@ -236,12 +236,7 @@ async def player_info(ctx, uid: str):
                         raise Exception(f"API returned status {resp.status}")
                     data = await resp.json()
 
-            info = data get("basicInfo", {})
-            pet = data get("petInfo", {})
-            clan = data get("clanBasicInfo", {})
-            social = data get("socialInfo", {})
-            leader = data get("captainBasicInfo", {})
-
+           
             # Level-based color
             level = int(info.get("level", 0))
             if level >= 70:
