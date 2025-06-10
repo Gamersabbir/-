@@ -219,7 +219,7 @@ async def like_command(ctx, uid: str):
 # ---------- নতুন playerinfo কমান্ড ----------IN..
 
 
-@bot.command(name="playerinfo", aliases=["PLAYER", "Player"])
+@bot.command(name="INFO")
 @is_registered_channel()
 async def playerinfo(ctx, uid: str):
     if not uid.isdigit():
