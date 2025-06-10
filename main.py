@@ -200,6 +200,7 @@ async def like_command(ctx, uid: str):
                 )
 
                 embed.set_thumbnail(url=ctx.author.avatar.url if ctx.author.avatar else ctx.author.default_avatar.url)
+                 embed.set_image(url="https://i.imgur.com/ajygBes.gif")
                 embed.set_footer(text="📌 Like Service by GAMER SABBIR")
                 await ctx.send(f"{ctx.author.mention}", embed=embed)
                 return
