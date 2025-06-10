@@ -201,7 +201,7 @@ async def like_command(ctx, uid: str):
 
                 embed.set_thumbnail(url=ctx.author.avatar.url if ctx.author.avatar else ctx.author.default_avatar.url)
                 embed.set_image(url="https://i.imgur.com/ajygBes.gif")
-                embed.set_footer(text="📌 Like Service by GAMER SABBIR")
+                embed.set_footer(text="📌 Dev</> !  GAMER SABBIR")
                 await ctx.send(f"{ctx.author.mention}", embed=embed)
                 return
 
@@ -246,7 +246,7 @@ async def playerinfo(ctx, uid: str):
 
             embed = discord.Embed(
                 title=f"📘 Player Profile — {info['nickname']}",
-                description="Player info fetched using GAMER CORP.Official API",
+                description="Player info fetched using GAMER CORPORATION  API",
                 color=discord.Color.blue()
             )
 
@@ -291,6 +291,7 @@ async def playerinfo(ctx, uid: str):
             ), inline=False)
 
             embed.set_thumbnail(url=ctx.author.avatar.url if ctx.author.avatar else ctx.author.default_avatar.url)
+            embed.set_image(url="https://i.imgur.com/ajygBes.gif")
             embed.set_footer(text="📌 Dev</> !  GAMER SABBIR")
             await ctx.send(f"{ctx.author.mention}", embed=embed)
 
