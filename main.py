@@ -168,7 +168,7 @@ async def like_command(ctx, uid: str):
         await ctx.send(f"{ctx.author.mention} ❌ Invalid UID! উদাহরণ: `!like 123456789`")
         return
 
-    url = f"https://like-apirexx.up.railway.app/like?uid={uid}"
+    url = f"https://like-dita.onrender.com/like?uid={uid}"
 
     async with ctx.typing():
         try:
