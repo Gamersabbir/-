@@ -226,7 +226,7 @@ async def playerinfo(ctx, uid: str):
         await ctx.send(f"{ctx.author.mention} ❌ Invalid UID! উদাহরণ: `!playerinfo 123456789`")
         return
 
-    url = f"https://api-info-nxx.onrender.com/info?uid={uid}"
+    url = f"https://api-info-gb.up.railway.app/info?uid={uid}"
 
     async with ctx.typing():
         try:
