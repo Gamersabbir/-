@@ -120,42 +120,48 @@ async def check_ban_command(ctx):
         period = ban_status.get("period", "N/A")
         nickname = ban_status.get("nickname", "NA")
         region = ban_status.get("region", "N/A")
-        id_str = f"`{user_id}`"
+        id_str = f"{user_id}"
 
         if isinstance(period, int):
             period_str = f"more than {period} months" if lang == "en" else f"plus de {period} mois"
         else:
             period_str = "unavailable" if lang == "en" else "indisponible"
 
+        if is_banned:
+            title_text = "**▌ Banned Account 🛑**" if lang == "en" else "**▌ Compte banni 🛑**"
+            desc = (
+                "┌ BAN STATUS\n"
+                f"├─ Reason: {'This account was confirmed for using cheats.' if lang == 'en' else 'Ce compte a été confirmé comme utilisant des hacks.'}\n"
+                f"├─ Suspension duration: {period_str}\n"
+                f"├─ Nickname: {nickname}\n"
+                f"├─ Player ID: `{id_str}`\n"
+                f"└─ Region: {region}"
+            )
+            color = 0xFF0000
+            image_url = "https://i.imgur.com/6PDA32M.gif"
+        else:
+            title_text = "**▌ Clean Account ✅**" if lang == "en" else "**▌ Compte non banni ✅**"
+            desc = (
+                "┌ BAN STATUS\n"
+                f"├─ Status: {'No sufficient evidence of cheat usage on this account.' if lang == 'en' else 'Aucune preuve suffisante pour confirmer l’utilisation de hacks sur ce compte.'}\n"
+                f"├─ Nickname: {nickname}\n"
+                f"├─ Player ID: `{id_str}`\n"
+                f"└─ Region: {region}"
+            )
+            color = 0x00FF00
+            image_url = "https://i.imgur.com/166jkZ7.gif"
+
         embed = discord.Embed(
-            color=0xFF0000 if is_banned else 0x00FF00,
+            title=title_text,
+            description=f"```{desc}```",
+            color=color,
             timestamp=ctx.message.created_at
         )
 
-        if is_banned:
-            embed.title = "**▌ Banned Account 🛑 **" if lang == "en" else "**▌ Compte banni 🛑 **"
-            embed.description = (
-                f"**• {'Reason' if lang == 'en' else 'Raison'} :** "
-                f"{'This account was confirmed for using cheats.' if lang == 'en' else 'Ce compte a été confirmé comme utilisant des hacks.'}\n"
-                f"**• {'Suspension duration' if lang == 'en' else 'Durée de la suspension'} :** {period_str}\n"
-                f"**• {'Nickname' if lang == 'en' else 'Pseudo'} :** `{nickname}`\n"
-                f"**• {'Player ID' if lang == 'en' else 'ID du joueur'} :** `{id_str}`\n"
-                f"**• {'Region' if lang == 'en' else 'Région'} :** `{region}`"
-            )
-            embed.set_image(url="https://i.imgur.com/6PDA32M.gif")
-        else:
-            embed.title = "**▌ Clean Account ✅ **" if lang == "en" else "**▌ Compte non banni ✅ **"
-            embed.description = (
-                f"**• {'Status' if lang == 'en' else 'Statut'} :** "
-                f"{'No sufficient evidence of cheat usage on this account.' if lang == 'en' else 'Aucune preuve suffisante pour confirmer l’utilisation de hacks sur ce compte.'}\n"
-                f"**• {'Nickname' if lang == 'en' else 'Pseudo'} :** `{nickname}`\n"
-                f"**• {'Player ID' if lang == 'en' else 'ID du joueur'} :** `{id_str}`\n"
-                f"**• {'Region' if lang == 'en' else 'Région'} :** `{region}`"
-            )
-            embed.set_image(url="https://i.imgur.com/166jkZ7.gif")
-
         embed.set_thumbnail(url=ctx.author.avatar.url if ctx.author.avatar else ctx.author.default_avatar.url)
+        embed.set_image(url=image_url)
         embed.set_footer(text="📌  Dev</>!      GAMER SABBIR")
+
         await ctx.send(f"{ctx.author.mention}", embed=embed)
 
 
