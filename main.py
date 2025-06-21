@@ -192,16 +192,19 @@ async def like_command(ctx, uid: str):
 
             # ✅ যদি লাইক সফলভাবে যুক্ত হয়
             if data.get("status") == 1:
+                like_info = (
+                    "┌ FREE FIRE LIKE ADDED\n"
+                    f"├─ Nickname: {data.get('nickname')}\n"
+                    f"├─ Region: {data.get('region')}\n"
+                    f"├─ Likes Before: {data.get('likes_before')}\n"
+                    f"├─ Likes Added: {data.get('likes_added')}\n"
+                    f"└─ Likes After: {data.get('likes_after')}\n"
+                    f"UID: `{data.get('uid')}`"
+                )
+
                 embed = discord.Embed(
                     title="🔥 Free Fire Like Added!",
-                    description=(
-                        f"👤 **Nickname:** `{data.get('nickname')}`\n"
-                        f"🌍 **Region:** `{data.get('region')}`\n"
-                        f"❤️ **Likes Before:** `{data.get('likes_before')}`\n"
-                        f"➕ **Likes Added:** `{data.get('likes_added')}`\n"
-                        f"💯 **Likes After:** `{data.get('likes_after')}`\n"
-                        f"🆔 **UID:** `{data.get('uid')}`"
-                    ),
+                    description=f"```{like_info}```",
                     color=discord.Color.purple()
                 )
 
@@ -216,7 +219,6 @@ async def like_command(ctx, uid: str):
 
         except Exception as e:
             await ctx.send(f"{ctx.author.mention} ❌ Error fetching like info:\n```{str(e)}```")
-
 
 
 
@@ -295,6 +297,8 @@ async def playerinfo(ctx, uid: str):
                 f"└─ Last Login: {convert_time(captain.get('lastLoginAt', '0'))}"
             )
 
+            profile_image_url = f"https://profile-aimguard.vercel.app/generate-profile?uid={uid}&region={info['region'].lower()}"
+
             embed = discord.Embed(
                 title=f"📘 Player Profile — {info['nickname']}",
                 description="```"
@@ -308,13 +312,12 @@ async def playerinfo(ctx, uid: str):
             )
 
             embed.set_thumbnail(url=ctx.author.avatar.url if ctx.author.avatar else ctx.author.default_avatar.url)
-            embed.set_image(url="https://i.imgur.com/ajygBes.gif")
+            embed.set_image(url=profile_image_url)
             embed.set_footer(text="📌 Dev</> !  GAMER SABBIR")
             await ctx.send(f"{ctx.author.mention}", embed=embed)
 
         except Exception as e:
             await ctx.send(f"{ctx.author.mention} ❌ Error fetching player info:\n```{str(e)}```")
-
 
 
 bot.run(TOKEN)
