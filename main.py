@@ -233,7 +233,7 @@ async def playerinfo(ctx, uid: str):
             async with aiohttp.ClientSession() as session:
                 async with session.get(url) as response:
                     data = await response.json()
-            
+
             info = data["basicInfo"]
             pet = data.get("petInfo", {})
             clan = data.get("clanBasicInfo", {})
@@ -244,51 +244,62 @@ async def playerinfo(ctx, uid: str):
                 from datetime import datetime
                 return datetime.utcfromtimestamp(int(timestamp)).strftime("%Y-%m-%d %H:%M:%S")
 
-            embed = discord.Embed(
-                title=f"📘 Player Profile — {info['nickname']}",
-                description="Player info fetched using GAMER CORPORATION  API",
-                color=discord.Color.blue()
+            account_info = (
+                "┌ ACCOUNT BASIC INFO\n"
+                f"├─ Name: {info['nickname']}\n"
+                f"├─ UID: {info['accountId']}\n"
+                f"├─ Level: {info['level']} (Exp: {info['exp']})\n"
+                f"├─ Region: {info['region']}\n"
+                f"├─ Likes: {info['liked']}\n"
+                f"├─ Honor Score: {data['creditScoreInfo']['creditScore']}\n"
+                f"└─ Signature: {social.get('signature', 'N/A')}"
             )
 
-            embed.add_field(name="👤 Account Info", value=(
-                f"**Name:** {info['nickname']}\n"
-                f"**UID:** `{info['accountId']}`\n"
-                f"**Level:** {info['level']} 🎖️ (Exp: {info['exp']})\n"
-                f"**Region:** {info['region']} 🌍\n"
-                f"**Likes:** {info['liked']} ❤️\n"
-                f"**Honor Score:** {data['creditScoreInfo']['creditScore']} 🏅\n"
-                f"**Signature:** {social.get('signature', 'N/A')}"
-            ), inline=False)
+            activity_info = (
+                "┌ PLAYER ACTIVITY\n"
+                f"├─ OB Version: {info['releaseVersion']}\n"
+                f"├─ BR Rank: {info['rankingPoints']}\n"
+                f"├─ CS Points: 0\n"
+                f"├─ Account Created: {convert_time(info['createAt'])}\n"
+                f"└─ Last Login: {convert_time(info['lastLoginAt'])}"
+            )
 
-            embed.add_field(name="🎮 Activity", value=(
-                f"**OB Version:** {info['releaseVersion']} 🚀\n"
-                f"**BR Rank:** {info['rankingPoints']} 🏆\n"
-                f"**CS Points:** 0 ⚔️\n"
-                f"**Account Created:** {convert_time(info['createAt'])} 🕰️\n"
-                f"**Last Login:** {convert_time(info['lastLoginAt'])} 🔑"
-            ), inline=False)
+            pet_info = (
+                "┌ PET INFO\n"
+                f"├─ Name: {pet.get('name', 'N/A')}\n"
+                f"├─ Level: {pet.get('level', 'N/A')}\n"
+                f"└─ Exp: {pet.get('exp', 'N/A')}"
+            )
 
-            embed.add_field(name="🐾 Pet Info", value=(
-                f"**Name:** {pet.get('name', 'N/A')} 🐶\n"
-                f"**Level:** {pet.get('level', 'N/A')} 📈\n"
-                f"**Exp:** {pet.get('exp', 'N/A')} ⭐"
-            ), inline=False)
+            guild_info = (
+                "┌ GUILD INFO\n"
+                f"├─ Name: {clan.get('clanName', 'N/A')}\n"
+                f"├─ ID: {clan.get('clanId', 'N/A')}\n"
+                f"├─ Level: {clan.get('clanLevel', 'N/A')}\n"
+                f"└─ Members: {clan.get('memberNum', 'N/A')}"
+            )
 
-            embed.add_field(name="🛡️ Guild Info", value=(
-                f"**Name:** {clan.get('clanName', 'N/A')} 🏰\n"
-                f"**ID:** {clan.get('clanId', 'N/A')}\n"
-                f"**Level:** {clan.get('clanLevel', 'N/A')} ⬆️\n"
-                f"**Members:** {clan.get('memberNum', 'N/A')} 👥"
-            ), inline=False)
+            leader_info = (
+                "┌ GUILD LEADER\n"
+                f"├─ Name: {captain.get('nickname', 'N/A')}\n"
+                f"├─ Level: {captain.get('level', 'N/A')}\n"
+                f"├─ UID: {captain.get('accountId', 'N/A')}\n"
+                f"├─ Likes: {captain.get('liked', 'N/A')}\n"
+                f"├─ BR Points: {captain.get('rankingPoints', 'N/A')}\n"
+                f"└─ Last Login: {convert_time(captain.get('lastLoginAt', '0'))}"
+            )
 
-            embed.add_field(name="👑 Guild Leader", value=(
-                f"**Name:** {captain.get('nickname', 'N/A')} 👑\n"
-                f"**Level:** {captain.get('level', 'N/A')} 📈\n"
-                f"**UID:** `{captain.get('accountId', 'N/A')}`\n"
-                f"**Likes:** {captain.get('liked', 'N/A')} ❤️\n"
-                f"**BR Points:** {captain.get('rankingPoints', 'N/A')} 🏆\n"
-                f"**Last Login:** {convert_time(captain.get('lastLoginAt', '0'))} 🔑"
-            ), inline=False)
+            embed = discord.Embed(
+                title=f"📘 Player Profile — {info['nickname']}",
+                description="```"
+                            f"{account_info}\n\n"
+                            f"{activity_info}\n\n"
+                            f"{pet_info}\n\n"
+                            f"{guild_info}\n\n"
+                            f"{leader_info}"
+                            "```",
+                color=discord.Color.blue()
+            )
 
             embed.set_thumbnail(url=ctx.author.avatar.url if ctx.author.avatar else ctx.author.default_avatar.url)
             embed.set_image(url="https://i.imgur.com/ajygBes.gif")
@@ -297,6 +308,7 @@ async def playerinfo(ctx, uid: str):
 
         except Exception as e:
             await ctx.send(f"{ctx.author.mention} ❌ Error fetching player info:\n```{str(e)}```")
+
 
 
 bot.run(TOKEN)
