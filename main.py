@@ -1,199 +1,99 @@
 import discord
 import os
-from discord.ext import commands
+from discord import app_commands
 from dotenv import load_dotenv
 from flask import Flask
 import threading
-import aiohttp
+aiohttp
 from utils import check_ban
-import requests
 
 app = Flask(__name__)
 
-load_dotenv()
-APPLICATION_ID = os.getenv("APPLICATION_ID")
-TOKEN = os.getenv("TOKEN")
-
-intents = discord.Intents.default()
-intents.message_content = True
-bot = commands.Bot(command_prefix="!", intents=intents)
-
-DEFAULT_LANG = "en"
-user_languages = {}
-
-nomBot = "None"
-
-# সার্ভার আইডি অনুযায়ী রেজিস্টার্ড চ্যানেল আইডি রাখার ডিকশনারি
-registered_channels = {}
-
 @app.route('/')
 def home():
-    global nomBot
-    return f"Bot {nomBot} is working"
+    return f"Bot is working"
 
 def run_flask():
     app.run(host='0.0.0.0', port=10000)
 
 threading.Thread(target=run_flask).start()
 
-@bot.event
+load_dotenv()
+TOKEN = os.getenv("TOKEN")
+
+class MyClient(discord.Client):
+    def __init__(self):
+        intents = discord.Intents.default()
+        intents.message_content = True
+        super().__init__(intents=intents)
+        self.tree = app_commands.CommandTree(self)
+
+client = MyClient()
+registered_channels = {}
+user_languages = {}
+DEFAULT_LANG = "en"
+
+@client.event
 async def on_ready():
-    global nomBot
-    nomBot = f"{bot.user}"
-    print(f"Le bot est connecté en tant que {bot.user}")
+    await client.tree.sync()
+    print(f"✅ Logged in as {client.user}")
 
+# -------- /setup --------
+@client.tree.command(name="setup", description="Register this channel for bot commands")
+@app_commands.checks.has_permissions(administrator=True)
+async def setup(interaction: discord.Interaction):
+    registered_channels[interaction.guild.id] = interaction.channel.id
+    await interaction.response.send_message("✅ This channel is now registered for bot commands.", ephemeral=True)
 
+async def is_registered(interaction: discord.Interaction):
+    return registered_channels.get(interaction.guild.id) == interaction.channel.id
 
-
-# ---------- নতুন !setup কমান্ড ----------
-@bot.command(name="setup", aliases=["SETUP", "Setup"])
-@commands.has_permissions(administrator=True)  # শুধুমাত্র অ্যাডমিনরা চালাতে পারবে
-async def setup(ctx):
-    server_id = ctx.guild.id
-    channel_id = ctx.channel.id
-    registered_channels[server_id] = channel_id
-    await ctx.send(f"এই সার্ভারের জন্য এই চ্যানেল (ID: <#{channel_id}>) রেজিস্টার করা হলো। এখন থেকে এই চ্যানেলেই কমান্ড চলবে।")
-
-# ---------- চ্যানেল চেক করার চেক ----------
-def is_registered_channel():
-    def predicate(ctx):
-        server_id = ctx.guild.id
-        if server_id not in registered_channels:
-            return False  # setup হয় নাই, কাজ করবে না
-        # চ্যানেল ম্যাচ করানো হচ্ছে
-        return ctx.channel.id == registered_channels[server_id]
-    return commands.check(predicate)
-
-@bot.command(name="guilds", aliases=["GUILDS", "Guilds"])
-async def show_guilds(ctx):
-    guild_names = [f"{i+1}. {guild.name}" for i, guild in enumerate(bot.guilds)]
-    guild_list = "\n".join(guild_names)
-    await ctx.send(f"Le bot est dans les guilds suivantes :\n{guild_list}")
-
-@bot.command(name="lang", aliases=["LANG", "Lang"])
-async def change_language(ctx, lang_code: str):
+# -------- /lang --------
+@client.tree.command(name="lang", description="Change language")
+@app_commands.describe(lang_code="Language code: en or fr")
+async def lang(interaction: discord.Interaction, lang_code: str):
     lang_code = lang_code.lower()
     if lang_code not in ["en", "fr"]:
-        await ctx.send("❌ Invalid language. Available: `en`, `fr`")
+        await interaction.response.send_message("❌ Invalid language. Use 'en' or 'fr'", ephemeral=True)
         return
+    user_languages[interaction.user.id] = lang_code
+    msg = "✅ Language set to English." if lang_code == 'en' else "✅ Langue définie sur le français."
+    await interaction.response.send_message(msg, ephemeral=True)
 
-    user_languages[ctx.author.id] = lang_code
-    message = "✅ Language set to English  And  Bangla  ." if lang_code == 'en' else "✅ Langue définie sur le français."
-    await ctx.send(f"{ctx.author.mention} {message}")
-
-
-
-
-@bot.command(name="ID")
-@is_registered_channel()  # শুধু রেজিস্টার্ড চ্যানেলে কাজ করবে
-async def check_ban_command(ctx):
-    content = ctx.message.content
-    user_id = content[3:].strip()
-    lang = user_languages.get(ctx.author.id, "en")
-
-    print(f"Commande fait par {ctx.author} (lang={lang})")
-
-    if not user_id.isdigit():
-        message = {
-            "en": f"{ctx.author.mention} ❌ **Invalid UID!**\n➡️ Please use: `!ID 123456789`",
-            "fr": f"{ctx.author.mention} ❌ **UID invalide !**\n➡️ Veuillez fournir un UID valide sous la forme : `!ID 123456789`"
-        }
-        await ctx.send(message[lang])
+# -------- /guilds --------
+@client.tree.command(name="guilds", description="Show all servers this bot is in")
+async def guilds(interaction: discord.Interaction):
+    if not client.guilds:
+        await interaction.response.send_message("❌ Bot is not in any servers.", ephemeral=True)
         return
+    guild_list = "\n".join([f"{i+1}. {g.name}" for i, g in enumerate(client.guilds)])
+    await interaction.response.send_message(f"📋 Bot is in the following servers:\n{guild_list}")
 
-    async with ctx.typing():
-        try:
-            ban_status = await check_ban(user_id)
-        except Exception as e:
-            await ctx.send(f"{ctx.author.mention} ⚠️ Error:\n```{str(e)}```")
-            return
-
-        if ban_status is None:
-            message = {
-                "en": f"{ctx.author.mention} ❌ **Could not get information. Please try again later.**",
-                "fr": f"{ctx.author.mention} ❌ **Impossible d'obtenir les informations.**\nVeuillez réessayer plus tard."
-            }
-            await ctx.send(message[lang])
-            return
-
-        is_banned = int(ban_status.get("is_banned", 0))
-        period = ban_status.get("period", "N/A")
-        nickname = ban_status.get("nickname", "NA")
-        region = ban_status.get("region", "N/A")
-        id_str = f"{user_id}"
-
-        if isinstance(period, int):
-            period_str = f"more than {period} months" if lang == "en" else f"plus de {period} mois"
-        else:
-            period_str = "unavailable" if lang == "en" else "indisponible"
-
-        if is_banned:
-            title_text = "**▌ Banned Account 🛑**" if lang == "en" else "**▌ Compte banni 🛑**"
-            desc = (
-                "┌ BAN STATUS\n"
-                f"├─ Reason: {'This account was confirmed for using cheats.' if lang == 'en' else 'Ce compte a été confirmé comme utilisant des hacks.'}\n"
-                f"├─ Suspension duration: {period_str}\n"
-                f"├─ Nickname: {nickname}\n"
-                f"├─ Player ID: `{id_str}`\n"
-                f"└─ Region: {region}"
-            )
-            color = 0xFF0000
-            image_url = "https://i.imgur.com/6PDA32M.gif"
-        else:
-            title_text = "**▌ Clean Account ✅**" if lang == "en" else "**▌ Compte non banni ✅**"
-            desc = (
-                "┌ BAN STATUS\n"
-                f"├─ Status: {'No sufficient evidence of cheat usage on this account.' if lang == 'en' else 'Aucune preuve suffisante pour confirmer l’utilisation de hacks sur ce compte.'}\n"
-                f"├─ Nickname: {nickname}\n"
-                f"├─ Player ID: `{id_str}`\n"
-                f"└─ Region: {region}"
-            )
-            color = 0x00FF00
-            image_url = "https://i.imgur.com/166jkZ7.gif"
-
-        embed = discord.Embed(
-            title=title_text,
-            description=f"```{desc}```",
-            color=color,
-            timestamp=ctx.message.created_at
-        )
-
-        embed.set_thumbnail(url=ctx.author.avatar.url if ctx.author.avatar else ctx.author.default_avatar.url)
-        embed.set_image(url=image_url)
-        embed.set_footer(text="📌  Dev</>!      GAMER SABBIR")
-
-        await ctx.send(f"{ctx.author.mention}", embed=embed)
-
-
-# ---------- নতুন playerinfo কমান্ড ----------LI..
-
-@bot.command(name="LIKE")
-@is_registered_channel()
-async def like_command(ctx, uid: str):
+# -------- /like --------
+@client.tree.command(name="like", description="Send like to Free Fire UID")
+@app_commands.describe(uid="Enter Free Fire UID")
+async def like(interaction: discord.Interaction, uid: str):
+    if not await is_registered(interaction):
+        await interaction.response.send_message("❌ This channel is not registered. Use /setup", ephemeral=True)
+        return
     if not uid.isdigit():
-        await ctx.send(f"{ctx.author.mention} ❌ Invalid UID! উদাহরণ: `!like 123456789`")
+        await interaction.response.send_message("❌ Invalid UID! Example: /like 123456789", ephemeral=True)
         return
-
     url = f"https://like-dita.onrender.com/like?uid={uid}"
-
-    async with ctx.typing():
+    async with aiohttp.ClientSession() as session:
         try:
-            async with aiohttp.ClientSession() as session:
-                async with session.get(url) as resp:
-                    data = await resp.json()
+            async with session.get(url) as resp:
+                data = await resp.json()
 
-            # ✅ যদি UID ভুল হয় (status 400)
             if data.get("status") == 400:
-                await ctx.send(
-                    f"{ctx.author.mention} ❌ **Error:** {data.get('error', 'Invalid UID')}\n"
-                    f"📌 Message: {data.get('message', 'Please enter a valid numeric UID.')}"
+                await interaction.response.send_message(
+                    f"❌ Error: {data.get('error')}\n📌 Message: {data.get('message')}"
                 )
                 return
 
-            # ✅ যদি লাইক সফলভাবে যুক্ত হয়
             if data.get("status") == 1:
-                like_info = (
-                    "┌ FREE FIRE LIKE ADDED\n"
+                info = (
+                    f"┌ FREE FIRE LIKE ADDED\n"
                     f"├─ Nickname: {data.get('nickname')}\n"
                     f"├─ Region: {data.get('region')}\n"
                     f"├─ Likes Before: {data.get('likes_before')}\n"
@@ -201,46 +101,122 @@ async def like_command(ctx, uid: str):
                     f"└─ Likes After: {data.get('likes_after')}\n"
                     f"UID: `{data.get('uid')}`"
                 )
-
                 embed = discord.Embed(
                     title="🔥 Free Fire Like Added!",
-                    description=f"```{like_info}```",
+                    description=f"```{info}```",
                     color=discord.Color.purple()
                 )
-
-                embed.set_thumbnail(url=ctx.author.avatar.url if ctx.author.avatar else ctx.author.default_avatar.url)
+                embed.set_thumbnail(url=interaction.user.avatar.url if interaction.user.avatar else interaction.user.default_avatar.url)
                 embed.set_image(url="https://i.imgur.com/ajygBes.gif")
-                embed.set_footer(text="📌 Dev</> !  GAMER SABBIR")
-                await ctx.send(f"{ctx.author.mention}", embed=embed)
+                embed.set_footer(text="📌 Dev </> GAMER SABBIR")
+                await interaction.response.send_message(embed=embed)
                 return
 
-            # ❌ অন্য যেকোনো সমস্যা
-            await ctx.send(f"{ctx.author.mention} ⚠️ Unexpected error. Please try again later.")
+            await interaction.response.send_message("⚠️ Unexpected error. Please try again later.")
 
         except Exception as e:
-            await ctx.send(f"{ctx.author.mention} ❌ Error fetching like info:\n```{str(e)}```")
+            await interaction.response.send_message(f"❌ Error:\n```{str(e)}```")
 
-
-
-
-
-# ---------- নতুন playerinfo কমান্ড ----------IN..
-
-
-@bot.command(name="INFO")
-@is_registered_channel()
-async def playerinfo(ctx, uid: str):
-    if not uid.isdigit():
-        await ctx.send(f"{ctx.author.mention} ❌ Invalid UID! উদাহরণ: `!playerinfo 123456789`")
+# -------- /id --------
+@client.tree.command(name="id", description="Check Free Fire ID ban status")
+@app_commands.describe(uid="Enter Free Fire UID")
+async def check_ban_cmd(interaction: discord.Interaction, uid: str):
+    if not await is_registered(interaction):
+        await interaction.response.send_message("❌ This channel is not registered. Use /setup", ephemeral=True)
         return
+    lang = user_languages.get(interaction.user.id, "en")
+    if not uid.isdigit():
+        msg = {
+            "en": "❌ Invalid UID! Example: /id 123456789",
+            "fr": "❌ UID invalide ! Exemple : /id 123456789"
+        }
+        await interaction.response.send_message(msg[lang], ephemeral=True)
+        return
+    try:
+        ban_status = await check_ban(uid)
+        if ban_status is None:
+            await interaction.response.send_message("❌ Could not get info. Try again later.", ephemeral=True)
+            return
+        is_banned = int(ban_status.get("is_banned", 0))
+        period = ban_status.get("period", "N/A")
+        nickname = ban_status.get("nickname", "NA")
+        region = ban_status.get("region", "N/A")
+        period_str = f"more than {period} months" if isinstance(period, int) else "unavailable"
+        if is_banned:
+            title = "**▌ Banned Account 🛑**"
+            desc = (
+                "┌ BAN STATUS\n"
+                f"├─ Reason: This account was confirmed for using cheats.\n"
+                f"├─ Suspension duration: {period_str}\n"
+                f"├─ Nickname: {nickname}\n"
+                f"├─ Player ID: `{uid}`\n"
+                f"└─ Region: {region}"
+            )
+            color = 0xFF0000
+            image = "https://i.imgur.com/6PDA32M.gif"
+        else:
+            title = "**▌ Clean Account ✅**"
+            desc = (
+                "┌ BAN STATUS\n"
+                f"├─ Status: No evidence of cheat usage.\n"
+                f"├─ Nickname: {nickname}\n"
+                f"├─ Player ID: `{uid}`\n"
+                f"└─ Region: {region}"
+            )
+            color = 0x00FF00
+            image = "https://i.imgur.com/166jkZ7.gif"
+        embed = discord.Embed(
+            title=title,
+            description=f"```{desc}```",
+            color=color
+        )
+        embed.set_thumbnail(url=interaction.user.avatar.url if interaction.user.avatar else interaction.user.default_avatar.url)
+        embed.set_image(url=image)
+        embed.set_footer(text="📌 Dev </> GAMER SABBIR")
+        await interaction.response.send_message(embed=embed)
+    except Exception as e:
+        await interaction.response.send_message(f"❌ Error:\n```{str(e)}```")
 
+
+# -------- /help --------
+@client.tree.command(name="help", description="Show all available bot commands")
+async def help_command(interaction: discord.Interaction):
+    help_text = (
+        "📘 **Available Commands:**\n\n"
+        "**/setup** — Register this channel for bot commands\n"
+        "**/lang [en|fr]** — Set your preferred language\n"
+        "**/guilds** — Show all servers the bot is in\n"
+        "**/like [uid]** — Add like to Free Fire UID\n"
+        "**/id [uid]** — Check ban status of a Free Fire ID\n"
+        "**/info [uid]** — Get detailed player info by UID\n"
+        "**/help** — Show this help message"
+    )
+
+    embed = discord.Embed(
+        title="📖 Help Menu",
+        description=help_text,
+        color=discord.Color.green()
+    )
+    embed.set_footer(text="📌 Dev </> GAMER SABBIR")
+    await interaction.response.send_message(embed=embed, ephemeral=True)
+
+
+
+# -------- /info --------
+@client.tree.command(name="info", description="Get detailed player info by UID")
+@app_commands.describe(uid="Enter Free Fire UID")
+async def playerinfo(interaction: discord.Interaction, uid: str):
+    if not await is_registered(interaction):
+        await interaction.response.send_message("❌ This channel is not registered. Use /setup", ephemeral=True)
+        return
+    if not uid.isdigit():
+        await interaction.response.send_message("❌ Invalid UID! Example: /info 123456789", ephemeral=True)
+        return
     url = f"https://api-info-gb.up.railway.app/info?uid={uid}"
-
-    async with ctx.typing():
+    async with aiohttp.ClientSession() as session:
         try:
-            async with aiohttp.ClientSession() as session:
-                async with session.get(url) as response:
-                    data = await response.json()
+            async with session.get(url) as response:
+                data = await response.json()
 
             info = data["basicInfo"]
             pet = data.get("petInfo", {})
@@ -252,7 +228,7 @@ async def playerinfo(ctx, uid: str):
                 from datetime import datetime
                 return datetime.utcfromtimestamp(int(timestamp)).strftime("%Y-%m-%d %H:%M:%S")
 
-            account_info = (
+            profile_text = (
                 "┌ ACCOUNT BASIC INFO\n"
                 f"├─ Name: {info['nickname']}\n"
                 f"├─ UID: {info['accountId']}\n"
@@ -260,34 +236,22 @@ async def playerinfo(ctx, uid: str):
                 f"├─ Region: {info['region']}\n"
                 f"├─ Likes: {info['liked']}\n"
                 f"├─ Honor Score: {data['creditScoreInfo']['creditScore']}\n"
-                f"└─ Signature: {social.get('signature', 'N/A')}"
-            )
-
-            activity_info = (
+                f"└─ Signature: {social.get('signature', 'N/A')}\n\n"
                 "┌ PLAYER ACTIVITY\n"
                 f"├─ OB Version: {info['releaseVersion']}\n"
                 f"├─ BR Rank: {info['rankingPoints']}\n"
                 f"├─ CS Points: 0\n"
                 f"├─ Account Created: {convert_time(info['createAt'])}\n"
-                f"└─ Last Login: {convert_time(info['lastLoginAt'])}"
-            )
-
-            pet_info = (
+                f"└─ Last Login: {convert_time(info['lastLoginAt'])}\n\n"
                 "┌ PET INFO\n"
                 f"├─ Name: {pet.get('name', 'N/A')}\n"
                 f"├─ Level: {pet.get('level', 'N/A')}\n"
-                f"└─ Exp: {pet.get('exp', 'N/A')}"
-            )
-
-            guild_info = (
+                f"└─ Exp: {pet.get('exp', 'N/A')}\n\n"
                 "┌ GUILD INFO\n"
                 f"├─ Name: {clan.get('clanName', 'N/A')}\n"
                 f"├─ ID: {clan.get('clanId', 'N/A')}\n"
                 f"├─ Level: {clan.get('clanLevel', 'N/A')}\n"
-                f"└─ Members: {clan.get('memberNum', 'N/A')}"
-            )
-
-            leader_info = (
+                f"└─ Members: {clan.get('memberNum', 'N/A')}\n\n"
                 "┌ GUILD LEADER\n"
                 f"├─ Name: {captain.get('nickname', 'N/A')}\n"
                 f"├─ Level: {captain.get('level', 'N/A')}\n"
@@ -297,27 +261,19 @@ async def playerinfo(ctx, uid: str):
                 f"└─ Last Login: {convert_time(captain.get('lastLoginAt', '0'))}"
             )
 
-            profile_image_url = f"https://profile-aimguard.vercel.app/generate-profile?uid={uid}&region={info['region'].lower()}"
+            image_url = f"https://profile-aimguard.vercel.app/generate-profile?uid={uid}&region={info['region'].lower()}"
 
             embed = discord.Embed(
                 title=f"📘 Player Profile — {info['nickname']}",
-                description="```"
-                            f"{account_info}\n\n"
-                            f"{activity_info}\n\n"
-                            f"{pet_info}\n\n"
-                            f"{guild_info}\n\n"
-                            f"{leader_info}"
-                            "```",
+                description=f"```{profile_text}```",
                 color=discord.Color.blue()
             )
-
-            embed.set_thumbnail(url=ctx.author.avatar.url if ctx.author.avatar else ctx.author.default_avatar.url)
-            embed.set_image(url=profile_image_url)
-            embed.set_footer(text="📌 Dev</> !  GAMER SABBIR")
-            await ctx.send(f"{ctx.author.mention}", embed=embed)
+            embed.set_thumbnail(url=interaction.user.avatar.url if interaction.user.avatar else interaction.user.default_avatar.url)
+            embed.set_image(url=image_url)
+            embed.set_footer(text="📌 Dev </> GAMER SABBIR")
+            await interaction.response.send_message(embed=embed)
 
         except Exception as e:
-            await ctx.send(f"{ctx.author.mention} ❌ Error fetching player info:\n```{str(e)}```")
+            await interaction.response.send_message(f"❌ Error:\n```{str(e)}```")
 
-
-bot.run(TOKEN)
+client.run(TOKEN)
