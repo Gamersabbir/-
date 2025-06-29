@@ -220,71 +220,99 @@ async def playerinfo(interaction: discord.Interaction, uid: str):
     if not await is_registered(interaction):
         await interaction.response.send_message("❌ This channel is not registered. Use /setup", ephemeral=True)
         return
+
     if not uid.isdigit():
         await interaction.response.send_message("❌ Invalid UID! Example: /info 123456789", ephemeral=True)
         return
+
     url = f"https://api-info-gb.up.railway.app/info?uid={uid}"
+
+    await interaction.response.defer()
+
     async with aiohttp.ClientSession() as session:
         try:
             async with session.get(url) as response:
                 data = await response.json()
 
-            info = data["basicInfo"]
-            pet = data.get("petInfo", {})
-            clan = data.get("clanBasicInfo", {})
-            captain = data.get("captainBasicInfo", {})
-            social = data.get("socialInfo", {})
+                # যদি player না থাকে বা ভুল UID হয়
+                if "detail" in data:
+                    await interaction.followup.send(f"❌ {data['detail']}", ephemeral=True)
+                    return
 
-            def convert_time(timestamp):
-                from datetime import datetime
-                return datetime.utcfromtimestamp(int(timestamp)).strftime("%Y-%m-%d %H:%M:%S")
+                info = data["basicInfo"]
+                pet = data.get("petInfo", {})
+                clan = data.get("clanBasicInfo", {})
+                captain = data.get("captainBasicInfo", {})
+                social = data.get("socialInfo", {})
 
-            profile_text = (
-                "┌ ACCOUNT BASIC INFO\n"
-                f"├─ Name: {info['nickname']}\n"
-                f"├─ UID: {info['accountId']}\n"
-                f"├─ Level: {info['level']} (Exp: {info['exp']})\n"
-                f"├─ Region: {info['region']}\n"
-                f"├─ Likes: {info['liked']}\n"
-                f"├─ Honor Score: {data['creditScoreInfo']['creditScore']}\n"
-                f"└─ Signature: {social.get('signature', 'N/A')}\n\n"
-                "┌ PLAYER ACTIVITY\n"
-                f"├─ OB Version: {info['releaseVersion']}\n"
-                f"├─ BR Rank: {info['rankingPoints']}\n"
-                f"├─ CS Points: 0\n"
-                f"├─ Account Created: {convert_time(info['createAt'])}\n"
-                f"└─ Last Login: {convert_time(info['lastLoginAt'])}\n\n"
-                "┌ PET INFO\n"
-                f"├─ Name: {pet.get('name', 'N/A')}\n"
-                f"├─ Level: {pet.get('level', 'N/A')}\n"
-                f"└─ Exp: {pet.get('exp', 'N/A')}\n\n"
-                "┌ GUILD INFO\n"
-                f"├─ Name: {clan.get('clanName', 'N/A')}\n"
-                f"├─ ID: {clan.get('clanId', 'N/A')}\n"
-                f"├─ Level: {clan.get('clanLevel', 'N/A')}\n"
-                f"└─ Members: {clan.get('memberNum', 'N/A')}\n\n"
-                "┌ GUILD LEADER\n"
-                f"├─ Name: {captain.get('nickname', 'N/A')}\n"
-                f"├─ Level: {captain.get('level', 'N/A')}\n"
-                f"├─ UID: {captain.get('accountId', 'N/A')}\n"
-                f"├─ Likes: {captain.get('liked', 'N/A')}\n"
-                f"├─ BR Points: {captain.get('rankingPoints', 'N/A')}\n"
-                f"└─ Last Login: {convert_time(captain.get('lastLoginAt', '0'))}"
-            )
+                def convert_time(timestamp):
+                    from datetime import datetime
+                    return datetime.utcfromtimestamp(int(timestamp)).strftime("%Y-%m-%d %H:%M:%S")
 
-            image_url = f"https://profile-aimguard.vercel.app/generate-profile?uid={uid}&region={info['region'].lower()}"
+                # 🔹 Embed 1: Account Basic Info
+                embed1 = discord.Embed(
+                    title=f"👤 Player Profile — {info['nickname']}",
+                    color=discord.Color.blue()
+                )
+                embed1.set_thumbnail(url=interaction.user.avatar.url if interaction.user.avatar else interaction.user.default_avatar.url)
+                embed1.add_field(name="🆔 UID", value=info["accountId"], inline=True)
+                embed1.add_field(name="🌍 Region", value=info["region"], inline=True)
+                embed1.add_field(name="📈 Level", value=f"{info['level']} (Exp: {info['exp']})", inline=True)
+                embed1.add_field(name="❤️ Likes", value=info["liked"], inline=True)
+                embed1.add_field(name="🏅 Honor Score", value=data['creditScoreInfo']['creditScore'], inline=True)
+                embed1.add_field(name="📝 Signature", value=social.get("signature", 'N/A'), inline=False)
 
-            embed = discord.Embed(
-                title=f"📘 Player Profile — {info['nickname']}",
-                description=f"```{profile_text}```",
-                color=discord.Color.blue()
-            )
-            embed.set_thumbnail(url=interaction.user.avatar.url if interaction.user.avatar else interaction.user.default_avatar.url)
-            embed.set_image(url=image_url)
-            embed.set_footer(text="📌 Dev </> GAMER SABBIR")
-            await interaction.response.send_message(embed=embed)
+                # 🔹 Embed 2: Activity Info
+                embed2 = discord.Embed(
+                    title="🕹️ Player Activity",
+                    color=discord.Color.green()
+                )
+                embed2.add_field(name="🔄 OB Version", value=info["releaseVersion"], inline=True)
+                embed2.add_field(name="🏆 BR Rank", value=info["rankingPoints"], inline=True)
+                embed2.add_field(name="🎯 CS Points", value="0", inline=True)
+                embed2.add_field(name="📅 Created", value=convert_time(info["createAt"]), inline=True)
+                embed2.add_field(name="🕒 Last Login", value=convert_time(info["lastLoginAt"]), inline=True)
+
+                # 🔹 Embed 3: Pet Info
+                embed3 = discord.Embed(
+                    title="🐾 Pet Info",
+                    color=discord.Color.gold()
+                )
+                embed3.add_field(name="🐶 Name", value=pet.get("name", "N/A"), inline=True)
+                embed3.add_field(name="⬆️ Level", value=pet.get("level", "N/A"), inline=True)
+                embed3.add_field(name="✨ Exp", value=pet.get("exp", "N/A"), inline=True)
+
+                # 🔹 Embed 4: Guild Info
+                embed4 = discord.Embed(
+                    title="🏰 Guild Info",
+                    color=discord.Color.orange()
+                )
+                embed4.add_field(name="🏷️ Name", value=clan.get("clanName", "N/A"), inline=True)
+                embed4.add_field(name="🆔 ID", value=clan.get("clanId", "N/A"), inline=True)
+                embed4.add_field(name="📶 Level", value=clan.get("clanLevel", "N/A"), inline=True)
+                embed4.add_field(name="👥 Members", value=clan.get("memberNum", "N/A"), inline=True)
+
+                # 🔹 Embed 5: Guild Leader Info
+                embed5 = discord.Embed(
+                    title="👑 Guild Leader Info",
+                    color=discord.Color.red()
+                )
+                embed5.add_field(name="🧍 Name", value=captain.get("nickname", "N/A"), inline=True)
+                embed5.add_field(name="🎓 Level", value=captain.get("level", "N/A"), inline=True)
+                embed5.add_field(name="🆔 UID", value=captain.get("accountId", "N/A"), inline=True)
+                embed5.add_field(name="❤️ Likes", value=captain.get("liked", "N/A"), inline=True)
+                embed5.add_field(name="🏆 BR Points", value=captain.get("rankingPoints", "N/A"), inline=True)
+                embed5.add_field(name="🕒 Last Login", value=convert_time(captain.get("lastLoginAt", '0')), inline=True)
+
+                # ➕ Profile Image
+                image_url = f"https://profile-aimguard.vercel.app/generate-profile?uid={uid}&region={info['region'].lower()}"
+                embed5.set_image(url=image_url)
+                embed5.set_footer(text="📌 Dev </> GAMER SABBIR")
+
+                # ✅ Send all embeds
+                await interaction.followup.send(embeds=[embed1, embed2, embed3, embed4, embed5])
 
         except Exception as e:
-            await interaction.response.send_message(f"❌ Error:\n```{str(e)}```")
+            await interaction.followup.send(f"❌ Error occurred:\n```{str(e)}```", ephemeral=True)
 
 client.run(TOKEN)
