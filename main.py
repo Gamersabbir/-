@@ -4,8 +4,9 @@ from discord import app_commands
 from dotenv import load_dotenv
 from flask import Flask
 import threading
-aiohttp
+import aiohttp   # <-- এখানে ইমপোর্ট করুন
 from utils import check_ban
+
 
 app = Flask(__name__)
 
