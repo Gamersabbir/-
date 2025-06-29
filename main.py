@@ -125,58 +125,27 @@ async def check_ban_cmd(interaction: discord.Interaction, uid: str):
     if not await is_registered(interaction):
         await interaction.response.send_message("❌ This channel is not registered. Use /setup", ephemeral=True)
         return
+
+    await interaction.response.defer()  # 🛠️ Prevent timeout
+
     lang = user_languages.get(interaction.user.id, "en")
     if not uid.isdigit():
         msg = {
             "en": "❌ Invalid UID! Example: /id 123456789",
             "fr": "❌ UID invalide ! Exemple : /id 123456789"
         }
-        await interaction.response.send_message(msg[lang], ephemeral=True)
+        await interaction.followup.send(msg[lang], ephemeral=True)
         return
     try:
         ban_status = await check_ban(uid)
         if ban_status is None:
-            await interaction.response.send_message("❌ Could not get info. Try again later.", ephemeral=True)
+            await interaction.followup.send("❌ Could not get info. Try again later.", ephemeral=True)
             return
-        is_banned = int(ban_status.get("is_banned", 0))
-        period = ban_status.get("period", "N/A")
-        nickname = ban_status.get("nickname", "NA")
-        region = ban_status.get("region", "N/A")
-        period_str = f"more than {period} months" if isinstance(period, int) else "unavailable"
-        if is_banned:
-            title = "**▌ Banned Account 🛑**"
-            desc = (
-                "┌ BAN STATUS\n"
-                f"├─ Reason: This account was confirmed for using cheats.\n"
-                f"├─ Suspension duration: {period_str}\n"
-                f"├─ Nickname: {nickname}\n"
-                f"├─ Player ID: `{uid}`\n"
-                f"└─ Region: {region}"
-            )
-            color = 0xFF0000
-            image = "https://i.imgur.com/6PDA32M.gif"
-        else:
-            title = "**▌ Clean Account ✅**"
-            desc = (
-                "┌ BAN STATUS\n"
-                f"├─ Status: No evidence of cheat usage.\n"
-                f"├─ Nickname: {nickname}\n"
-                f"├─ Player ID: `{uid}`\n"
-                f"└─ Region: {region}"
-            )
-            color = 0x00FF00
-            image = "https://i.imgur.com/166jkZ7.gif"
-        embed = discord.Embed(
-            title=title,
-            description=f"```{desc}```",
-            color=color
-        )
-        embed.set_thumbnail(url=interaction.user.avatar.url if interaction.user.avatar else interaction.user.default_avatar.url)
-        embed.set_image(url=image)
-        embed.set_footer(text="📌 Dev </> GAMER SABBIR")
-        await interaction.response.send_message(embed=embed)
+        ...
+        await interaction.followup.send(embed=embed)  # 🛠️ Use followup
     except Exception as e:
-        await interaction.response.send_message(f"❌ Error:\n```{str(e)}```")
+        await interaction.followup.send(f"❌ Error:\n```{str(e)}```", ephemeral=True)
+
 
 
 # -------- /help --------
