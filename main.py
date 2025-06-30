@@ -232,12 +232,10 @@ async def playerinfo(interaction: discord.Interaction, uid: str):
             async with session.get(url) as response:
                 data = await response.json()
 
-                # ✅ check if player not found message
                 if "detail" in data:
                     await interaction.response.send_message(f"❌ {data['detail']}", ephemeral=True)
                     return
 
-                # ✅ continue if data is valid
                 info = data["basicInfo"]
                 pet = data.get("petInfo", {})
                 clan = data.get("clanBasicInfo", {})
@@ -248,54 +246,87 @@ async def playerinfo(interaction: discord.Interaction, uid: str):
                     from datetime import datetime
                     return datetime.utcfromtimestamp(int(timestamp)).strftime("%Y-%m-%d %H:%M:%S")
 
-                profile_text = (
-                    "┌ ACCOUNT BASIC INFO\n"
-                    f"├─ Name: {info['nickname']}\n"
-                    f"├─ UID: {info['accountId']}\n"
-                    f"├─ Level: {info['level']} (Exp: {info['exp']})\n"
-                    f"├─ Region: {info['region']}\n"
-                    f"├─ Likes: {info['liked']}\n"
-                    f"├─ Honor Score: {data['creditScoreInfo']['creditScore']}\n"
-                    f"└─ Signature: {social.get('signature', 'N/A')}\n\n"
-                    "┌ PLAYER ACTIVITY\n"
-                    f"├─ OB Version: {info['releaseVersion']}\n"
-                    f"├─ BR Rank: {info['rankingPoints']}\n"
-                    f"├─ CS Points: 0\n"
-                    f"├─ Account Created: {convert_time(info['createAt'])}\n"
-                    f"└─ Last Login: {convert_time(info['lastLoginAt'])}\n\n"
-                    "┌ PET INFO\n"
-                    f"├─ Name: {pet.get('name', 'N/A')}\n"
-                    f"├─ Level: {pet.get('level', 'N/A')}\n"
-                    f"└─ Exp: {pet.get('exp', 'N/A')}\n\n"
-                    "┌ GUILD INFO\n"
-                    f"├─ Name: {clan.get('clanName', 'N/A')}\n"
-                    f"├─ ID: {clan.get('clanId', 'N/A')}\n"
-                    f"├─ Level: {clan.get('clanLevel', 'N/A')}\n"
-                    f"└─ Members: {clan.get('memberNum', 'N/A')}\n\n"
-                    "┌ GUILD LEADER\n"
-                    f"├─ Name: {captain.get('nickname', 'N/A')}\n"
-                    f"├─ Level: {captain.get('level', 'N/A')}\n"
-                    f"├─ UID: {captain.get('accountId', 'N/A')}\n"
-                    f"├─ Likes: {captain.get('liked', 'N/A')}\n"
-                    f"├─ BR Points: {captain.get('rankingPoints', 'N/A')}\n"
-                    f"└─ Last Login: {convert_time(captain.get('lastLoginAt', '0'))}"
-                )
-
-                image_url = f"https://profile-aimguard.vercel.app/generate-profile?uid={uid}&region={info['region'].lower()}"
-
+                # Create the embed
                 embed = discord.Embed(
                     title=f"📘 Player Profile — {info['nickname']}",
-                    description=f"```{profile_text}```",
-                    color=discord.Color.blue()
+                    description=f"{interaction.user.mention}, here is the player information:",
+                    color=discord.Color.dark_blue()
                 )
-                embed.set_thumbnail(url=interaction.user.avatar.url if interaction.user.avatar else interaction.user.default_avatar.url)
-                embed.set_image(url=image_url)
-                embed.set_footer(text="📌 Dev </> GAMER SABBIR")
 
+                embed.set_thumbnail(url=interaction.user.avatar.url if interaction.user.avatar else interaction.user.default_avatar.url)
+                embed.set_image(url=f"https://profile-aimguard.vercel.app/generate-profile?uid={uid}&region={info['region'].lower()}")
+
+                # 👤 Player Info
+                embed.add_field(
+                    name="👤 Player Info",
+                    value=(
+                        f"  ┌ Name: `{info['nickname']}`\n"
+                        f"  ├─ UID: `{info['accountId']}`\n"
+                        f"  ├─ Level: `{info['level']} (Exp: {info['exp']})`\n"
+                        f"  ├─ Region: `{info['region']}`\n"
+                        f"  ├─ Likes: `{info['liked']}`\n"
+                        f"  ├─ Honor Score: `{data['creditScoreInfo']['creditScore']}`\n"
+                        f"  └─ Signature: `{social.get('signature', 'N/A')}`"
+                    ),
+                    inline=False
+                )
+
+                # 🎮 Activity
+                embed.add_field(
+                    name="🎮 Player Activity",
+                    value=(
+                        f"  ┌ OB Version: `{info['releaseVersion']}`\n"
+                        f"  ├─ BR Rank: `{info['rankingPoints']}`\n"
+                        f"  ├─ CS Points: `0`\n"
+                        f"  ├─ Account Created: `{convert_time(info['createAt'])}`\n"
+                        f"  └─ Last Login: `{convert_time(info['lastLoginAt'])}`"
+                    ),
+                    inline=False
+                )
+
+                # 🐾 Pet Info
+                embed.add_field(
+                    name="🐾 Pet Info",
+                    value=(
+                        f"  ┌ Name: `{pet.get('name', 'N/A')}`\n"
+                        f"  ├─ Level: `{pet.get('level', 'N/A')}`\n"
+                        f"  └─ Exp: `{pet.get('exp', 'N/A')}`"
+                    ),
+                    inline=False
+                )
+
+                # 🏰 Guild Info
+                embed.add_field(
+                    name="🏰 Guild Info",
+                    value=(
+                        f"  ┌ Name: `{clan.get('clanName', 'N/A')}`\n"
+                        f"  ├─ ID: `{clan.get('clanId', 'N/A')}`\n"
+                        f"  ├─ Level: `{clan.get('clanLevel', 'N/A')}`\n"
+                        f"  └─ Members: `{clan.get('memberNum', 'N/A')}`"
+                    ),
+                    inline=False
+                )
+
+                # 👑 Guild Leader
+                embed.add_field(
+                    name="👑 Guild Leader",
+                    value=(
+                        f"  ┌ Name: `{captain.get('nickname', 'N/A')}`\n"
+                        f"  ├─ Level: `{captain.get('level', 'N/A')}`\n"
+                        f"  ├─ UID: `{captain.get('accountId', 'N/A')}`\n"
+                        f"  ├─ Likes: `{captain.get('liked', 'N/A')}`\n"
+                        f"  ├─ BR Points: `{captain.get('rankingPoints', 'N/A')}`\n"
+                        f"  └─ Last Login: `{convert_time(captain.get('lastLoginAt', '0'))}`"
+                    ),
+                    inline=False
+                )
+
+                embed.set_footer(text="📌 Dev </> GAMER SABBIR")
                 await interaction.response.send_message(embed=embed)
 
         except Exception as e:
             await interaction.response.send_message(f"❌ Error occurred:\n```{str(e)}```", ephemeral=True)
+
 
 
 
