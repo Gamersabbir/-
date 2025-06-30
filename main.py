@@ -214,10 +214,6 @@ async def help_command(interaction: discord.Interaction):
 
 
 # -------- /info --------
-from discord import app_commands
-import discord
-import aiohttp
-
 @client.tree.command(name="info", description="Get detailed player info by UID")
 @app_commands.describe(uid="Enter Free Fire UID")
 async def playerinfo(interaction: discord.Interaction, uid: str):
