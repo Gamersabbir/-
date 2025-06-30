@@ -260,13 +260,13 @@ async def playerinfo(interaction: discord.Interaction, uid: str):
                 embed.add_field(
                     name="👤 Player Info",
                     value=(
-                        f"  `┌ Name: {info['nickname']}\n"
+                        f"   ```┌ Name: {info['nickname']}\n"
                         f"  ├─ UID: {info['accountId']}\n"
                         f"  ├─ Level: {info['level']} (Exp: {info['exp']})\n"
                         f"  ├─ Region: {info['region']}\n"
                         f"  ├─ Likes: {info['liked']}\n"
                         f"  ├─ Honor Score: {data['creditScoreInfo']['creditScore']}\n"
-                        f"  └─ Signature: {social.get('signature', 'N/A')}`"
+                        f"  └─ Signature: {social.get('signature', 'N/A')}```"
                     ),
                     inline=False
                 )
@@ -275,11 +275,11 @@ async def playerinfo(interaction: discord.Interaction, uid: str):
                 embed.add_field(
                     name="🎮 Player Activity",
                     value=(
-                        f"  `┌ OB Version: {info['releaseVersion']}\n"
+                        f"   ```┌ OB Version: {info['releaseVersion']}\n"
                         f"  ├─ BR Rank: {info['rankingPoints']}\n"
                         f"  ├─ CS Points: 0\n"
                         f"  ├─ Account Created: {convert_time(info['createAt'])}\n"
-                        f"  └─ Last Login: {convert_time(info['lastLoginAt'])}`"
+                        f"  └─ Last Login: {convert_time(info['lastLoginAt'])}```"
                     ),
                     inline=False
                 )
@@ -288,9 +288,9 @@ async def playerinfo(interaction: discord.Interaction, uid: str):
                 embed.add_field(
                     name="🐾 Pet Info",
                     value=(
-                        f" ` ┌ Name: {pet.get('name', 'N/A')}\n"
+                        f"  ```┌ Name: {pet.get('name', 'N/A')}\n"
                         f"  ├─ Level: {pet.get('level', 'N/A')}\n"
-                        f"  └─ Exp: {pet.get('exp', 'N/A')}`"
+                        f"  └─ Exp: {pet.get('exp', 'N/A')}```"
                     ),
                     inline=False
                 )
@@ -299,10 +299,10 @@ async def playerinfo(interaction: discord.Interaction, uid: str):
                 embed.add_field(
                     name="🏰 Guild Info",
                     value=(
-                        f"  `┌ Name: {clan.get('clanName', 'N/A')}\n"
+                        f"   ```┌ Name: {clan.get('clanName', 'N/A')}\n"
                         f"  ├─ ID: {clan.get('clanId', 'N/A')}\n"
                         f"  ├─ Level: {clan.get('clanLevel', 'N/A')}\n"
-                        f"  └─ Members: {clan.get('memberNum', 'N/A')}`"
+                        f"  └─ Members: {clan.get('memberNum', 'N/A')}```"
                     ),
                     inline=False
                 )
@@ -311,12 +311,12 @@ async def playerinfo(interaction: discord.Interaction, uid: str):
                 embed.add_field(
                     name="👑 Guild Leader",
                     value=(
-                        f"  `┌ Name: {captain.get('nickname', 'N/A')}\n"
+                        f"   ```┌ Name: {captain.get('nickname', 'N/A')}\n"
                         f"  ├─ Level: {captain.get('level', 'N/A')}\n"
                         f"  ├─ UID: {captain.get('accountId', 'N/A')}\n"
                         f"  ├─ Likes: {captain.get('liked', 'N/A')}\n"
                         f"  ├─ BR Points: {captain.get('rankingPoints', 'N/A')}\n"
-                        f"  └─ Last Login: {convert_time(captain.get('lastLoginAt', '0'))}`"
+                        f"  └─ Last Login: {convert_time(captain.get('lastLoginAt', '0'))}```"
                     ),
                     inline=False
                 )
