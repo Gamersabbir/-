@@ -126,22 +126,18 @@ async def check_ban_cmd(interaction: discord.Interaction, uid: str):
         await interaction.response.send_message("❌ This channel is not registered. Use /setup", ephemeral=True)
         return
 
-    await interaction.response.defer()
-
-    lang = user_languages.get(interaction.user.id, "en")
-
     if not uid.isdigit():
+        lang = user_languages.get(interaction.user.id, "en")
         msg = {
             "en": "❌ Invalid UID! Example: /id 123456789",
             "fr": "❌ UID invalide ! Exemple : /id 123456789"
         }
-        await interaction.followup.send(msg[lang], ephemeral=True)
+        await interaction.response.send_message(msg.get(lang, msg["en"]), ephemeral=True)
         return
 
-    try:
-        # Debug message to see it's working
-        await interaction.followup.send("⏳ Checking ban status...", ephemeral=True)
+    await interaction.response.defer(thinking=True)
 
+    try:
         ban_status = await check_ban(uid)
         if ban_status is None:
             await interaction.followup.send("❌ Could not get info. Try again later.", ephemeral=True)
@@ -151,28 +147,29 @@ async def check_ban_cmd(interaction: discord.Interaction, uid: str):
         period = ban_status.get("period", "N/A")
         nickname = ban_status.get("nickname", "NA")
         region = ban_status.get("region", "N/A")
+
         period_str = f"more than {period} months" if isinstance(period, int) else "unavailable"
 
         if is_banned:
             title = "**▌ Banned Account 🛑**"
             desc = (
-                "🛑 BAN STATUS\n"
-                f"```┌  Reason: This account was confirmed for using cheats.\n"
-                f"├─ Suspension duration: {period_str}\n"
-                f"├─ Nickname: {nickname}\n"
-                f"├─ Player ID: `{uid}`\n"
-                f"└─ Region: {region}```"
+                f"🚫 BAN STATUS\n"
+                f"```┌ Reason: This account was confirmed for using cheats.\n"
+                f"├ Suspension duration: {period_str}\n"
+                f"├ Nickname: {nickname}\n"
+                f"├ Player ID: {uid}\n"
+                f"└ Region: {region}```"
             )
             color = 0xFF0000
             image = "https://i.imgur.com/6PDA32M.gif"
         else:
             title = "**▌ Clean Account ✅**"
             desc = (
-                "✅ BAN STATUS\n"
-                f"```┌  Status: No evidence of cheat usage.\n"
-                f"├─ Nickname: {nickname}\n"
-                f"├─ Player ID: `{uid}`\n"
-                f"└─ Region: {region}``"
+                f"📒 BAN STATUS\n"
+                f"```┌ Status: No evidence of cheat usage.\n"
+                f"├ Nickname: {nickname}\n"
+                f"├ Player ID: {uid}\n"
+                f"└ Region: {region}```"
             )
             color = 0x00FF00
             image = "https://i.imgur.com/166jkZ7.gif"
@@ -183,7 +180,7 @@ async def check_ban_cmd(interaction: discord.Interaction, uid: str):
             color=color
         )
 
-        avatar_url = interaction.user.avatar.url if interaction.user.avatar else interaction.user.default_avatar.url
+        avatar_url = interaction.user.display_avatar.url
         embed.set_thumbnail(url=avatar_url)
         embed.set_image(url=image)
         embed.set_footer(text="📌 Dev </> GAMER SABBIR")
