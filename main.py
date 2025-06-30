@@ -214,7 +214,10 @@ async def help_command(interaction: discord.Interaction):
 
 
 # -------- /info --------
-@client.tree.command(name="info", description="Get detailed player info by UID")
+from discord import app_commands
+import discord
+import aiohttp
+
 @client.tree.command(name="info", description="Get detailed player info by UID")
 @app_commands.describe(uid="Enter Free Fire UID")
 async def playerinfo(interaction: discord.Interaction, uid: str):
@@ -302,5 +305,6 @@ async def playerinfo(interaction: discord.Interaction, uid: str):
 
         except Exception as e:
             await interaction.followup.send(f"❌ Error occurred:\n```{str(e)}```", ephemeral=True)
+
 
 client.run(TOKEN)
