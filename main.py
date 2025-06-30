@@ -126,7 +126,7 @@ async def check_ban_cmd(interaction: discord.Interaction, uid: str):
         await interaction.response.send_message("❌ This channel is not registered. Use /setup", ephemeral=True)
         return
 
-    await interaction.response.defer()  # Prevent timeout
+    await interaction.response.defer()
 
     lang = user_languages.get(interaction.user.id, "en")
 
@@ -139,6 +139,9 @@ async def check_ban_cmd(interaction: discord.Interaction, uid: str):
         return
 
     try:
+        # Debug message to see it's working
+        await interaction.followup.send("⏳ Checking ban status...", ephemeral=True)
+
         ban_status = await check_ban(uid)
         if ban_status is None:
             await interaction.followup.send("❌ Could not get info. Try again later.", ephemeral=True)
@@ -153,23 +156,23 @@ async def check_ban_cmd(interaction: discord.Interaction, uid: str):
         if is_banned:
             title = "**▌ Banned Account 🛑**"
             desc = (
-                "┌ BAN STATUS\n"
-                f"├─ Reason: This account was confirmed for using cheats.\n"
+                "🛑 BAN STATUS\n"
+                f"```┌  Reason: This account was confirmed for using cheats.\n"
                 f"├─ Suspension duration: {period_str}\n"
                 f"├─ Nickname: {nickname}\n"
                 f"├─ Player ID: `{uid}`\n"
-                f"└─ Region: {region}"
+                f"└─ Region: {region}```"
             )
             color = 0xFF0000
             image = "https://i.imgur.com/6PDA32M.gif"
         else:
             title = "**▌ Clean Account ✅**"
             desc = (
-                "┌ BAN STATUS\n"
-                f"├─ Status: No evidence of cheat usage.\n"
+                "✅ BAN STATUS\n"
+                f"```┌  Status: No evidence of cheat usage.\n"
                 f"├─ Nickname: {nickname}\n"
                 f"├─ Player ID: `{uid}`\n"
-                f"└─ Region: {region}"
+                f"└─ Region: {region}``"
             )
             color = 0x00FF00
             image = "https://i.imgur.com/166jkZ7.gif"
@@ -179,14 +182,21 @@ async def check_ban_cmd(interaction: discord.Interaction, uid: str):
             description=f"```{desc}```",
             color=color
         )
-        embed.set_thumbnail(url=interaction.user.avatar.url if interaction.user.avatar else interaction.user.default_avatar.url)
+
+        avatar_url = interaction.user.avatar.url if interaction.user.avatar else interaction.user.default_avatar.url
+        embed.set_thumbnail(url=avatar_url)
         embed.set_image(url=image)
         embed.set_footer(text="📌 Dev </> GAMER SABBIR")
 
         await interaction.followup.send(embed=embed)
 
     except Exception as e:
-        await interaction.followup.send(f"❌ Error:\n```{str(e)}```", ephemeral=True)
+        error_embed = discord.Embed(
+            title="❌ Error Occurred",
+            description=f"```{str(e)}```",
+            color=0xFF0000
+        )
+        await interaction.followup.send(embed=error_embed, ephemeral=True)
 
 
 # -------- /help --------
