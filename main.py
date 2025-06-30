@@ -250,57 +250,40 @@ async def playerinfo(interaction: discord.Interaction, uid: str):
                 def format_val(value):
                     return f"`{value}`" if value else "`N/A`"
 
-                # 🟦 Embed 1 — Basic Info
-                embed1 = discord.Embed(title="👤 Account Basic Info", color=0x1E90FF)
-                embed1.set_thumbnail(url=interaction.user.avatar.url if interaction.user.avatar else interaction.user.default_avatar.url)
-                embed1.add_field(name="🎮 Name", value=format_val(info.get("nickname")), inline=True)
-                embed1.add_field(name="🆔 UID", value=format_val(info.get("accountId")), inline=True)
-                embed1.add_field(name="📶 Level", value=format_val(f"{info.get('level')} (Exp: {info.get('exp')})"), inline=True)
-                embed1.add_field(name="🌍 Region", value=format_val(info.get("region")), inline=True)
-                embed1.add_field(name="❤️ Likes", value=format_val(info.get("liked")), inline=True)
-                embed1.add_field(name="⭐ Honor Score", value=format_val(data.get("creditScoreInfo", {}).get("creditScore")), inline=True)
-                embed1.add_field(name="📝 Signature", value=format_val(social.get("signature", "N/A")), inline=False)
+                embed = discord.Embed(
+                    title=f"👤 Player Info: {info.get('nickname', 'Unknown')}",
+                    color=0x3498DB
+                )
+                embed.set_thumbnail(url=interaction.user.avatar.url if interaction.user.avatar else interaction.user.default_avatar.url)
 
-                # 🟩 Embed 2 — Activity Info
-                embed2 = discord.Embed(title="🎮 Player Activity", color=0x2ECC71)
-                embed2.add_field(name="🔄 OB Version", value=format_val(info.get("releaseVersion")), inline=True)
-                embed2.add_field(name="🏆 BR Rank", value=format_val(info.get("rankingPoints")), inline=True)
-                embed2.add_field(name="🎯 CS Points", value="`0`", inline=True)
-                embed2.add_field(name="📅 Created", value=format_val(convert_time(info.get("createAt"))), inline=True)
-                embed2.add_field(name="🕒 Last Login", value=format_val(convert_time(info.get("lastLoginAt"))), inline=True)
+                embed.add_field(name="🆔 UID", value=format_val(info.get("accountId")), inline=True)
+                embed.add_field(name="📶 Level", value=format_val(f"{info.get('level')} (Exp: {info.get('exp')})"), inline=True)
+                embed.add_field(name="🌍 Region", value=format_val(info.get("region")), inline=True)
+                embed.add_field(name="❤️ Likes", value=format_val(info.get("liked")), inline=True)
+                embed.add_field(name="⭐ Honor Score", value=format_val(data.get("creditScoreInfo", {}).get("creditScore")), inline=True)
+                embed.add_field(name="📝 Signature", value=format_val(social.get("signature", "N/A")), inline=False)
 
-                # 🟨 Embed 3 — Pet Info
-                embed3 = discord.Embed(title="🐾 Pet Info", color=0xF1C40F)
-                embed3.add_field(name="🐶 Name", value=format_val(pet.get("name")), inline=True)
-                embed3.add_field(name="⬆️ Level", value=format_val(pet.get("level")), inline=True)
-                embed3.add_field(name="✨ Exp", value=format_val(pet.get("exp")), inline=True)
+                embed.add_field(name="🔄 OB Version", value=format_val(info.get("releaseVersion")), inline=True)
+                embed.add_field(name="🏆 BR Rank", value=format_val(info.get("rankingPoints")), inline=True)
+                embed.add_field(name="📅 Created", value=format_val(convert_time(info.get("createAt"))), inline=True)
+                embed.add_field(name="🕒 Last Login", value=format_val(convert_time(info.get("lastLoginAt"))), inline=True)
 
-                # 🟧 Embed 4 — Guild Info
-                embed4 = discord.Embed(title="🏰 Guild Info", color=0xE67E22)
-                embed4.add_field(name="🏷️ Name", value=format_val(clan.get("clanName")), inline=True)
-                embed4.add_field(name="🆔 ID", value=format_val(clan.get("clanId")), inline=True)
-                embed4.add_field(name="📊 Level", value=format_val(clan.get("clanLevel")), inline=True)
-                embed4.add_field(name="👥 Members", value=format_val(clan.get("memberNum")), inline=True)
+                embed.add_field(name="🐶 Pet", value=format_val(pet.get("name")), inline=True)
+                embed.add_field(name="⬆️ Pet Level", value=format_val(pet.get("level")), inline=True)
 
-                # 🟥 Embed 5 — Guild Leader
-                embed5 = discord.Embed(title="👑 Guild Leader", color=0xE74C3C)
-                embed5.add_field(name="🧍 Name", value=format_val(captain.get("nickname")), inline=True)
-                embed5.add_field(name="🎓 Level", value=format_val(captain.get("level")), inline=True)
-                embed5.add_field(name="🆔 UID", value=format_val(captain.get("accountId")), inline=True)
-                embed5.add_field(name="❤️ Likes", value=format_val(captain.get("liked")), inline=True)
-                embed5.add_field(name="🏆 BR Points", value=format_val(captain.get("rankingPoints")), inline=True)
-                embed5.add_field(name="🕒 Last Login", value=format_val(convert_time(captain.get("lastLoginAt", '0'))), inline=True)
+                embed.add_field(name="🏰 Guild", value=format_val(clan.get("clanName")), inline=True)
+                embed.add_field(name="📊 Guild Level", value=format_val(clan.get("clanLevel")), inline=True)
+                embed.add_field(name="👑 Leader", value=format_val(captain.get("nickname")), inline=True)
 
-                # 🔳 Add image and footer in last embed
                 image_url = f"https://profile-aimguard.vercel.app/generate-profile?uid={uid}&region={info['region'].lower()}"
-                embed5.set_image(url=image_url)
-                embed5.set_footer(text="📌 Dev </> GAMER SABBIR")
+                embed.set_image(url=image_url)
+                embed.set_footer(text="📌 Dev </> GAMER SABBIR")
 
-                # ✅ Send all embeds
-                await interaction.followup.send(embeds=[embed1, embed2, embed3, embed4, embed5])
+                await interaction.followup.send(embed=embed)
 
         except Exception as e:
             await interaction.followup.send(f"❌ Error occurred:\n```{str(e)}```", ephemeral=True)
+
 
 
 client.run(TOKEN)
