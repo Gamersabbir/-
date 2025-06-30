@@ -226,17 +226,18 @@ async def playerinfo(interaction: discord.Interaction, uid: str):
         return
 
     url = f"https://api-info-gb.up.railway.app/info?uid={uid}"
-    await interaction.response.defer()
 
     async with aiohttp.ClientSession() as session:
         try:
             async with session.get(url) as response:
                 data = await response.json()
 
+                # ✅ check if player not found message
                 if "detail" in data:
-                    await interaction.followup.send(f"❌ `{data['detail']}`", ephemeral=True)
+                    await interaction.response.send_message(f"❌ {data['detail']}", ephemeral=True)
                     return
 
+                # ✅ continue if data is valid
                 info = data["basicInfo"]
                 pet = data.get("petInfo", {})
                 clan = data.get("clanBasicInfo", {})
@@ -247,42 +248,55 @@ async def playerinfo(interaction: discord.Interaction, uid: str):
                     from datetime import datetime
                     return datetime.utcfromtimestamp(int(timestamp)).strftime("%Y-%m-%d %H:%M:%S")
 
-                def format_val(value):
-                    return f"`{value}`" if value else "`N/A`"
-
-                embed = discord.Embed(
-                    title=f"👤 Player Info: {info.get('nickname', 'Unknown')}",
-                    color=0x3498DB
+                profile_text = (
+                    "┌ ACCOUNT BASIC INFO\n"
+                    f"├─ Name: {info['nickname']}\n"
+                    f"├─ UID: {info['accountId']}\n"
+                    f"├─ Level: {info['level']} (Exp: {info['exp']})\n"
+                    f"├─ Region: {info['region']}\n"
+                    f"├─ Likes: {info['liked']}\n"
+                    f"├─ Honor Score: {data['creditScoreInfo']['creditScore']}\n"
+                    f"└─ Signature: {social.get('signature', 'N/A')}\n\n"
+                    "┌ PLAYER ACTIVITY\n"
+                    f"├─ OB Version: {info['releaseVersion']}\n"
+                    f"├─ BR Rank: {info['rankingPoints']}\n"
+                    f"├─ CS Points: 0\n"
+                    f"├─ Account Created: {convert_time(info['createAt'])}\n"
+                    f"└─ Last Login: {convert_time(info['lastLoginAt'])}\n\n"
+                    "┌ PET INFO\n"
+                    f"├─ Name: {pet.get('name', 'N/A')}\n"
+                    f"├─ Level: {pet.get('level', 'N/A')}\n"
+                    f"└─ Exp: {pet.get('exp', 'N/A')}\n\n"
+                    "┌ GUILD INFO\n"
+                    f"├─ Name: {clan.get('clanName', 'N/A')}\n"
+                    f"├─ ID: {clan.get('clanId', 'N/A')}\n"
+                    f"├─ Level: {clan.get('clanLevel', 'N/A')}\n"
+                    f"└─ Members: {clan.get('memberNum', 'N/A')}\n\n"
+                    "┌ GUILD LEADER\n"
+                    f"├─ Name: {captain.get('nickname', 'N/A')}\n"
+                    f"├─ Level: {captain.get('level', 'N/A')}\n"
+                    f"├─ UID: {captain.get('accountId', 'N/A')}\n"
+                    f"├─ Likes: {captain.get('liked', 'N/A')}\n"
+                    f"├─ BR Points: {captain.get('rankingPoints', 'N/A')}\n"
+                    f"└─ Last Login: {convert_time(captain.get('lastLoginAt', '0'))}"
                 )
-                embed.set_thumbnail(url=interaction.user.avatar.url if interaction.user.avatar else interaction.user.default_avatar.url)
-
-                embed.add_field(name="🆔 UID", value=format_val(info.get("accountId")), inline=True)
-                embed.add_field(name="📶 Level", value=format_val(f"{info.get('level')} (Exp: {info.get('exp')})"), inline=True)
-                embed.add_field(name="🌍 Region", value=format_val(info.get("region")), inline=True)
-                embed.add_field(name="❤️ Likes", value=format_val(info.get("liked")), inline=True)
-                embed.add_field(name="⭐ Honor Score", value=format_val(data.get("creditScoreInfo", {}).get("creditScore")), inline=True)
-                embed.add_field(name="📝 Signature", value=format_val(social.get("signature", "N/A")), inline=False)
-
-                embed.add_field(name="🔄 OB Version", value=format_val(info.get("releaseVersion")), inline=True)
-                embed.add_field(name="🏆 BR Rank", value=format_val(info.get("rankingPoints")), inline=True)
-                embed.add_field(name="📅 Created", value=format_val(convert_time(info.get("createAt"))), inline=True)
-                embed.add_field(name="🕒 Last Login", value=format_val(convert_time(info.get("lastLoginAt"))), inline=True)
-
-                embed.add_field(name="🐶 Pet", value=format_val(pet.get("name")), inline=True)
-                embed.add_field(name="⬆️ Pet Level", value=format_val(pet.get("level")), inline=True)
-
-                embed.add_field(name="🏰 Guild", value=format_val(clan.get("clanName")), inline=True)
-                embed.add_field(name="📊 Guild Level", value=format_val(clan.get("clanLevel")), inline=True)
-                embed.add_field(name="👑 Leader", value=format_val(captain.get("nickname")), inline=True)
 
                 image_url = f"https://profile-aimguard.vercel.app/generate-profile?uid={uid}&region={info['region'].lower()}"
+
+                embed = discord.Embed(
+                    title=f"📘 Player Profile — {info['nickname']}",
+                    description=f"```{profile_text}```",
+                    color=discord.Color.blue()
+                )
+                embed.set_thumbnail(url=interaction.user.avatar.url if interaction.user.avatar else interaction.user.default_avatar.url)
                 embed.set_image(url=image_url)
                 embed.set_footer(text="📌 Dev </> GAMER SABBIR")
 
-                await interaction.followup.send(embed=embed)
+                await interaction.response.send_message(embed=embed)
 
         except Exception as e:
-            await interaction.followup.send(f"❌ Error occurred:\n```{str(e)}```", ephemeral=True)
+            await interaction.response.send_message(f"❌ Error occurred:\n```{str(e)}```", ephemeral=True)
+
 
 
 
