@@ -215,6 +215,7 @@ async def help_command(interaction: discord.Interaction):
 
 # -------- /info --------
 @client.tree.command(name="info", description="Get detailed player info by UID")
+@client.tree.command(name="info", description="Get detailed player info by UID")
 @app_commands.describe(uid="Enter Free Fire UID")
 async def playerinfo(interaction: discord.Interaction, uid: str):
     if not await is_registered(interaction):
@@ -226,7 +227,6 @@ async def playerinfo(interaction: discord.Interaction, uid: str):
         return
 
     url = f"https://api-info-gb.up.railway.app/info?uid={uid}"
-
     await interaction.response.defer()
 
     async with aiohttp.ClientSession() as session:
@@ -234,9 +234,8 @@ async def playerinfo(interaction: discord.Interaction, uid: str):
             async with session.get(url) as response:
                 data = await response.json()
 
-                # যদি player না থাকে বা ভুল UID হয়
                 if "detail" in data:
-                    await interaction.followup.send(f"❌ {data['detail']}", ephemeral=True)
+                    await interaction.followup.send(f"❌ `{data['detail']}`", ephemeral=True)
                     return
 
                 info = data["basicInfo"]
@@ -249,62 +248,51 @@ async def playerinfo(interaction: discord.Interaction, uid: str):
                     from datetime import datetime
                     return datetime.utcfromtimestamp(int(timestamp)).strftime("%Y-%m-%d %H:%M:%S")
 
-                # 🔹 Embed 1: Account Basic Info
-                embed1 = discord.Embed(
-                    title=f"👤 Player Profile — {info['nickname']}",
-                    color=discord.Color.blue()
-                )
+                def format_val(value):
+                    return f"`{value}`" if value else "`N/A`"
+
+                # 🟦 Embed 1 — Basic Info
+                embed1 = discord.Embed(title="👤 Account Basic Info", color=0x1E90FF)
                 embed1.set_thumbnail(url=interaction.user.avatar.url if interaction.user.avatar else interaction.user.default_avatar.url)
-                embed1.add_field(name="🆔 UID", value=info["accountId"], inline=True)
-                embed1.add_field(name="🌍 Region", value=info["region"], inline=True)
-                embed1.add_field(name="📈 Level", value=f"{info['level']} (Exp: {info['exp']})", inline=True)
-                embed1.add_field(name="❤️ Likes", value=info["liked"], inline=True)
-                embed1.add_field(name="🏅 Honor Score", value=data['creditScoreInfo']['creditScore'], inline=True)
-                embed1.add_field(name="📝 Signature", value=social.get("signature", 'N/A'), inline=False)
+                embed1.add_field(name="🎮 Name", value=format_val(info.get("nickname")), inline=True)
+                embed1.add_field(name="🆔 UID", value=format_val(info.get("accountId")), inline=True)
+                embed1.add_field(name="📶 Level", value=format_val(f"{info.get('level')} (Exp: {info.get('exp')})"), inline=True)
+                embed1.add_field(name="🌍 Region", value=format_val(info.get("region")), inline=True)
+                embed1.add_field(name="❤️ Likes", value=format_val(info.get("liked")), inline=True)
+                embed1.add_field(name="⭐ Honor Score", value=format_val(data.get("creditScoreInfo", {}).get("creditScore")), inline=True)
+                embed1.add_field(name="📝 Signature", value=format_val(social.get("signature", "N/A")), inline=False)
 
-                # 🔹 Embed 2: Activity Info
-                embed2 = discord.Embed(
-                    title="🕹️ Player Activity",
-                    color=discord.Color.green()
-                )
-                embed2.add_field(name="🔄 OB Version", value=info["releaseVersion"], inline=True)
-                embed2.add_field(name="🏆 BR Rank", value=info["rankingPoints"], inline=True)
-                embed2.add_field(name="🎯 CS Points", value="0", inline=True)
-                embed2.add_field(name="📅 Created", value=convert_time(info["createAt"]), inline=True)
-                embed2.add_field(name="🕒 Last Login", value=convert_time(info["lastLoginAt"]), inline=True)
+                # 🟩 Embed 2 — Activity Info
+                embed2 = discord.Embed(title="🎮 Player Activity", color=0x2ECC71)
+                embed2.add_field(name="🔄 OB Version", value=format_val(info.get("releaseVersion")), inline=True)
+                embed2.add_field(name="🏆 BR Rank", value=format_val(info.get("rankingPoints")), inline=True)
+                embed2.add_field(name="🎯 CS Points", value="`0`", inline=True)
+                embed2.add_field(name="📅 Created", value=format_val(convert_time(info.get("createAt"))), inline=True)
+                embed2.add_field(name="🕒 Last Login", value=format_val(convert_time(info.get("lastLoginAt"))), inline=True)
 
-                # 🔹 Embed 3: Pet Info
-                embed3 = discord.Embed(
-                    title="🐾 Pet Info",
-                    color=discord.Color.gold()
-                )
-                embed3.add_field(name="🐶 Name", value=pet.get("name", "N/A"), inline=True)
-                embed3.add_field(name="⬆️ Level", value=pet.get("level", "N/A"), inline=True)
-                embed3.add_field(name="✨ Exp", value=pet.get("exp", "N/A"), inline=True)
+                # 🟨 Embed 3 — Pet Info
+                embed3 = discord.Embed(title="🐾 Pet Info", color=0xF1C40F)
+                embed3.add_field(name="🐶 Name", value=format_val(pet.get("name")), inline=True)
+                embed3.add_field(name="⬆️ Level", value=format_val(pet.get("level")), inline=True)
+                embed3.add_field(name="✨ Exp", value=format_val(pet.get("exp")), inline=True)
 
-                # 🔹 Embed 4: Guild Info
-                embed4 = discord.Embed(
-                    title="🏰 Guild Info",
-                    color=discord.Color.orange()
-                )
-                embed4.add_field(name="🏷️ Name", value=clan.get("clanName", "N/A"), inline=True)
-                embed4.add_field(name="🆔 ID", value=clan.get("clanId", "N/A"), inline=True)
-                embed4.add_field(name="📶 Level", value=clan.get("clanLevel", "N/A"), inline=True)
-                embed4.add_field(name="👥 Members", value=clan.get("memberNum", "N/A"), inline=True)
+                # 🟧 Embed 4 — Guild Info
+                embed4 = discord.Embed(title="🏰 Guild Info", color=0xE67E22)
+                embed4.add_field(name="🏷️ Name", value=format_val(clan.get("clanName")), inline=True)
+                embed4.add_field(name="🆔 ID", value=format_val(clan.get("clanId")), inline=True)
+                embed4.add_field(name="📊 Level", value=format_val(clan.get("clanLevel")), inline=True)
+                embed4.add_field(name="👥 Members", value=format_val(clan.get("memberNum")), inline=True)
 
-                # 🔹 Embed 5: Guild Leader Info
-                embed5 = discord.Embed(
-                    title="👑 Guild Leader Info",
-                    color=discord.Color.red()
-                )
-                embed5.add_field(name="🧍 Name", value=captain.get("nickname", "N/A"), inline=True)
-                embed5.add_field(name="🎓 Level", value=captain.get("level", "N/A"), inline=True)
-                embed5.add_field(name="🆔 UID", value=captain.get("accountId", "N/A"), inline=True)
-                embed5.add_field(name="❤️ Likes", value=captain.get("liked", "N/A"), inline=True)
-                embed5.add_field(name="🏆 BR Points", value=captain.get("rankingPoints", "N/A"), inline=True)
-                embed5.add_field(name="🕒 Last Login", value=convert_time(captain.get("lastLoginAt", '0')), inline=True)
+                # 🟥 Embed 5 — Guild Leader
+                embed5 = discord.Embed(title="👑 Guild Leader", color=0xE74C3C)
+                embed5.add_field(name="🧍 Name", value=format_val(captain.get("nickname")), inline=True)
+                embed5.add_field(name="🎓 Level", value=format_val(captain.get("level")), inline=True)
+                embed5.add_field(name="🆔 UID", value=format_val(captain.get("accountId")), inline=True)
+                embed5.add_field(name="❤️ Likes", value=format_val(captain.get("liked")), inline=True)
+                embed5.add_field(name="🏆 BR Points", value=format_val(captain.get("rankingPoints")), inline=True)
+                embed5.add_field(name="🕒 Last Login", value=format_val(convert_time(captain.get("lastLoginAt", '0'))), inline=True)
 
-                # ➕ Profile Image
+                # 🔳 Add image and footer in last embed
                 image_url = f"https://profile-aimguard.vercel.app/generate-profile?uid={uid}&region={info['region'].lower()}"
                 embed5.set_image(url=image_url)
                 embed5.set_footer(text="📌 Dev </> GAMER SABBIR")
